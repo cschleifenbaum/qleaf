@@ -49,13 +49,13 @@ void LeafOBCharger::receiveFrame(const QByteArray& data)
     if (maximumPower != m_maxOutputPower)
     {
         m_maxOutputPower = maximumPower;
-	changedValue = true;
+        changedValue = true;
         Q_EMIT maxOutputPowerChanged(maximumPower);
     }
     if (power != m_outputPower)
     {
         m_outputPower = power;
-	changedValue = true;
+        changedValue = true;
         Q_EMIT outputPowerChanged(power);
     }
     if (changedValue)
