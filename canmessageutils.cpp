@@ -67,6 +67,15 @@ double CanMessageUtils::readField(const QByteArray& data, const Field& field)
         bitpos += bitstoread - 16;
     }
 
+    if (field.isSigned)
+    {
+        bool msbit = result & (1 << (bitsread - 1));
+        if (msbit) {
+            for (int i = bitsread; i < 32; ++i)
+                result |= (1 << i);
+        }
+    }
+
     return result * field.factor + field.offset;
 }
 
