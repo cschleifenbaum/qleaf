@@ -1,6 +1,9 @@
 #include "canmessageutils.h"
 
+#include <QDebug>
 #include <QRegularExpression>
+
+#include <QtEndian>
 
 CanMessageUtils::Fields CanMessageUtils::parseFields(const QString& fields)
 {
@@ -56,6 +59,8 @@ CanMessageUtils::Field CanMessageUtils::parseField(const QString& field)
         return f;
     }
 
+    qDebug() << "Cannot parse" << field;
+
     return {};
 }
 
@@ -79,6 +84,18 @@ double CanMessageUtils::readField(const QByteArray& data, const Field& field)
         bitsread += bitstoread;
         length -= bitstoread;
         bitpos += bitstoread - 16;
+    }
+
+    if (field.isBigEndian)
+    {
+        if (field.length == 16)
+        {
+            result = qFromBigEndian<quint16>(result);
+        }
+        else
+        {
+            qDebug() << "no idea how to fix endianess..." << field.name;
+        }
     }
 
     if (field.isSigned)
