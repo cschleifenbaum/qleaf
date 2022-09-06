@@ -32,6 +32,23 @@ LeafChademoPort::LeafChademoPort(QCanBusDevice* canBusDevice, quint32 frameId, Q
                                                                   "SG_ StatusVehicleCharging : 40|1@1+ (1,0) [0|1] \"status\" Vector__XXX\n"
                                                                   "SG_ ChargingRate : 48|8@1+ (1,0) [0|100] \"%\" Vector__XXX"));
 
+    m_fields[0x108] = CanMessageUtils::parseFields(QStringLiteral("SG_ EVContactorWeldingDetection : 0|8@1+ (1,0) [0|1] "" Vector__XXX\n"
+                                                                  "SG_ AvailableOutputVoltage : 15|16@0+ (1,0) [0|600] \"V\" Vector__XXX\n"
+                                                                  "SG_ AvailableOutputCurrent : 24|8@1+ (1,0) [0|255] \"A\" Vector__XXX\n"
+                                                                  "SG_ ThresholdVoltage : 39|16@0+ (1,0) [0|600] \"V\" Vector__XXX"));
+
+    m_fields[0x109] = CanMessageUtils::parseFields(QStringLiteral("SG_ ControlProtocolNumberQC : 0|8@1+ (1,0) [0|255] \"-\" Vector__XXX\n"
+                                                                  "SG_ OutputVoltage : 15|16@0+ (1,0) [0|600] \"V\" Vector__XXX\n"
+                                                                  "SG_ OutputCurrent : 24|8@1+ (1,0) [0|255] \"A\" Vector__XXX\n"
+                                                                  "SG_ StatusChargerStopControl : 45|1@1+ (1,0) [0|1] \"status\" Vector__XXX\n"
+                                                                  "SG_ FaultChargingSystemMalfunction : 44|1@1+ (1,0) [0|1] \"status\" Vector__XXX\n"
+                                                                  "SG_ FaultBatteryIncompatibility : 43|1@1+ (1,0) [0|1] \"status\" Vector__XXX\n"
+                                                                  "SG_ StatusVehicleConnectorLock : 42|1@1+ (1,0) [0|1] \"status\" Vector__XXX\n"
+                                                                  "SG_ FaultStationMalfunction : 41|1@1+ (1,0) [0|1] \"status\" Vector__XXX\n"
+                                                                  "SG_ StatusStation : 40|1@1+ (1,0) [0|1] \"status\" Vector__XXX\n"
+                                                                  "SG_ RemainingChargingTime10sBit : 48|8@1+ (10,0) [0|2540] \"seconds\" Vector__XXX\n"
+                                                                  "SG_ RemainingChargingTime1minBit : 56|8@1+ (1,0) [0|255] \"minutes\" Vector__XXX"));
+
     QTimer* t = new QTimer(this);
     connect(t, &QTimer::timeout, this, &LeafChademoPort::prepareAndSendFrame);
     t->start(100);
@@ -39,7 +56,7 @@ LeafChademoPort::LeafChademoPort(QCanBusDevice* canBusDevice, quint32 frameId, Q
 
 void LeafChademoPort::receiveFrame(quint32 frameId, const QByteArray& data)
 {
-    qDebug() << hex << frameId << data;
+    qDebug() << Qt::hex << frameId << data;
     auto fields = m_fields[frameId];
     for (const auto& field : fields)
     {
