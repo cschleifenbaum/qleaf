@@ -4,6 +4,9 @@
 #include <QObject>
 
 class QCanBusDevice;
+class QCanBusFrame;
+
+class QTimer;
 
 class CanBusNode : public QObject
 {
@@ -16,11 +19,14 @@ public:
 
 Q_SIGNALS:
     void changed();
+    void timeout();
 
 protected:
     void sendFrame(const QByteArray& data);
     virtual void receiveFrame(quint32 frameId, const QByteArray& data);
     virtual void receiveFrame(const QByteArray& data);
+
+    void receiveFrame(const QCanBusFrame& frame);
 
     virtual QVector<quint32> receivingFrameIds() const;
 
@@ -29,6 +35,7 @@ private:
     QCanBusDevice* m_canBusDevice = nullptr;
     quint32 m_frameIdSending = 0x0;
     quint32 m_frameIdReceiving = 0x0;
+    QTimer* m_timeOutTimer = nullptr;
 };
 
 

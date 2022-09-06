@@ -36,13 +36,25 @@ void CanBusNodeDetector::frameReceived(QCanBusDevice* device, const QCanBusFrame
             return;
         if (auto node = m_factories[frame.frameId()](device, frame.frameId(), this))
         {
-            for (auto frameId : node->receivingFrameIds())
-                m_nodes.insert(frameId, node);
+            addNode(node);
             Q_EMIT canBusNodeCreated(node);
         }
     }
     auto node = m_nodes.value(frame.frameId());
     Q_ASSERT(node);
-    node->receiveFrame(frame.payload());
-    node->receiveFrame(frame.frameId(), frame.payload());
+    node->receiveFrame(frame);
+}
+
+void CanBusNodeDetector::addNode(CanBusNode* node)
+{
+    for (auto frameId : node->receivingFrameIds())
+        m_nodes.insert(frameId, node);
+    connect(node, &CanBusNode::timeout, this, [this, node]{ removeNode(node); });
+}
+
+void CanBusNodeDetector::removeNode(CanBusNode* node)
+{
+    for (auto frameId : node->receivingFrameIds())
+        m_nodes.remove(frameId);
+    node->deleteLater();
 }

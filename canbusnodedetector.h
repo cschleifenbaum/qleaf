@@ -30,7 +30,10 @@ public:
         for (auto node : m_nodes.values())
         {
             if (auto instance = dynamic_cast<T*>(node))
-                instances.push_back(instance);
+            {
+                if (!instances.contains(instance))
+                    instances.push_back(instance);
+            }
         }
         return instances;
     }
@@ -46,6 +49,9 @@ protected:
     }
 
     void frameReceived(QCanBusDevice* device, const QCanBusFrame& frame);
+
+    void addNode(CanBusNode* node);
+    void removeNode(CanBusNode* node);
 
 private:
     typedef std::function<CanBusNode*(QCanBusDevice*, quint32, QObject*)> FactoryFunc;
