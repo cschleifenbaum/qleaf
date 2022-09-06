@@ -1,6 +1,7 @@
 #include "leafchademoport.h"
 
 #include <QDebug>
+#include <QTimer>
 
 LeafChademoPort::LeafChademoPort(QCanBusDevice* canBusDevice, quint32 frameId, QObject* parent)
     : CanBusNode(canBusDevice, 0, frameId, parent)
@@ -30,12 +31,27 @@ LeafChademoPort::LeafChademoPort(QCanBusDevice* canBusDevice, quint32 frameId, Q
                                                                   "SG_ StatusVehicleShifterPosition : 41|1@1+ (1,0) [0|1] \"status\" Vector__XXX\n"
                                                                   "SG_ StatusVehicleCharging : 40|1@1+ (1,0) [0|1] \"status\" Vector__XXX\n"
                                                                   "SG_ ChargingRate : 48|8@1+ (1,0) [0|100] \"%\" Vector__XXX"));
+
+    QTimer* t = new QTimer(this);
+    connect(t, &QTimer::timeout, this, &LeafChademoPort::prepareAndSendFrame);
+    t->start(100);
 }
 
 void LeafChademoPort::receiveFrame(quint32 frameId, const QByteArray& data)
 {
+    auto fields = m_fields[frameId];
+    for (const auto& field : fields)
+    {
+        qDebug() << field.name << CanMessageUtils::readField(data, field);
+    }
 }
-    
+
+void LeafChademoPort::prepareAndSendFrame()
+{
+    sendFrame(0x108, QByteArray(8, '\0'));
+    sendFrame(0x109, QByteArray(8, '\0'));
+}
+
 QVector<quint32> LeafChademoPort::receivingFrameIds() const
 {
     return { 0x100, 0x101, 0x103, 0x200 };

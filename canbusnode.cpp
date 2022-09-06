@@ -13,10 +13,15 @@ CanBusNode::CanBusNode(QCanBusDevice* canBusDevice, quint32 frameIdSending, quin
     connect(m_timeOutTimer, &QTimer::timeout, this, &CanBusNode::timeout);
 }
 
+void CanBusNode::sendFrame(quint32 frameId, const QByteArray& data)
+{
+    QCanBusFrame frame(frameId, data);
+    m_canBusDevice->writeFrame(frame);
+}
+
 void CanBusNode::sendFrame(const QByteArray& data)
 {
-    QCanBusFrame frame(m_frameIdSending, data);
-    m_canBusDevice->writeFrame(frame);
+    sendFrame(m_frameIdSending, data);
 }
 
 void CanBusNode::receiveFrame(const QByteArray& data)

@@ -15,6 +15,8 @@ protected:
     void receiveFrame(quint32 frameId, const QByteArray& data) override;
     QVector<quint32> receivingFrameIds() const override;
 
+    void prepareAndSendFrame();
+
 private:
     QHash<quint32, CanMessageUtils::Fields> m_fields;
 };

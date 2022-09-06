@@ -22,6 +22,7 @@ Q_SIGNALS:
     void timeout();
 
 protected:
+    void sendFrame(quint32 frameId, const QByteArray& data);
     void sendFrame(const QByteArray& data);
     virtual void receiveFrame(quint32 frameId, const QByteArray& data);
     virtual void receiveFrame(const QByteArray& data);
