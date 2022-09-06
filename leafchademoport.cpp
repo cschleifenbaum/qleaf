@@ -39,6 +39,7 @@ LeafChademoPort::LeafChademoPort(QCanBusDevice* canBusDevice, quint32 frameId, Q
 
 void LeafChademoPort::receiveFrame(quint32 frameId, const QByteArray& data)
 {
+    qDebug() << hex << frameId << data;
     auto fields = m_fields[frameId];
     for (const auto& field : fields)
     {
@@ -54,5 +55,5 @@ void LeafChademoPort::prepareAndSendFrame()
 
 QVector<quint32> LeafChademoPort::receivingFrameIds() const
 {
-    return { 0x100, 0x101, 0x103, 0x200 };
+    return { 0x100, 0x101, 0x102, 0x200 };
 }
