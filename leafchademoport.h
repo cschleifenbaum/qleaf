@@ -2,6 +2,7 @@
 #define LEAFCHADEMOPORT_H
 
 #include "canbusnode.h"
+#include "canmessageutils.h"
 
 class LeafChademoPort : public CanBusNode
 {
@@ -13,6 +14,9 @@ public:
 protected:
     void receiveFrame(quint32 frameId, const QByteArray& data) override;
     QVector<quint32> receivingFrameIds() const override;
+
+private:
+    QHash<quint32, CanMessageUtils::Fields> m_fields;
 };
 
 #endif

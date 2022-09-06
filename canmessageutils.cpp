@@ -2,6 +2,20 @@
 
 #include <QRegularExpression>
 
+CanMessageUtils::Fields CanMessageUtils::parseFields(const QString& fields)
+{
+    Fields result;
+
+    for (const auto& line : fields.split(QRegularExpression(QStringLiteral("\n|\r\n|\r"))))
+    {
+        auto f = parseField(line);
+        if (!f.name.isEmpty())
+            result.insert(f.name, f);
+    }
+
+    return result;
+}
+
 CanMessageUtils::Field CanMessageUtils::parseField(const QString& field)
 {
     // "SG_ MaximumBatteryVoltage : 39|16@0+ (1,0) [0|600] "V" Vector__XXX"
