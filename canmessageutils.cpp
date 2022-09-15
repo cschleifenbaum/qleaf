@@ -64,10 +64,12 @@ CanMessageUtils::Field CanMessageUtils::parseField(const QString& field)
     return {};
 }
 
-void CanMessageUtils::writeField(QByteArray& data, const Field& field, double value)
+void CanMessageUtils::writeField(QByteArray& data, const Field& field, double doubleValue)
 {
-    value -= field.offset;
-    value /= field.factor;
+    doubleValue -= field.offset;
+    doubleValue /= field.factor;
+
+    int value = doubleValue;
 
     int bitswritten = 0;
     int bitpos = field.bitpos;
@@ -77,8 +79,21 @@ void CanMessageUtils::writeField(QByteArray& data, const Field& field, double va
         int byte = bitpos / 8;
         int localbitpos = bitpos % 8;
         int bitstowrite = std::min(length, 8 - localbitpos);
-        uchar mask = uchar(0xff << 8 >> bitstowrite) >> (8 - bitstowrite) << localbitpos;
-        int shift = localbitpos - bitstowrite
+        quint32 mask = uchar(0xff << 8 >> bitstowrite) >> (8 - bitstowrite) << localbitpos;
+        int shift = localbitpos - bitswritten;
+
+        auto localvalue = (value & (mask >> std::max(0, shift) << std::max(0, -shift))) << std::max(0, shift) >> std::max(0, -shift);
+
+        uchar target = data[byte];
+        target &= ~mask;
+        target |= localvalue;
+        data[byte] = target;
+
+        bitswritten += bitstowrite;
+        length -= bitstowrite;
+        bitpos += bitstowrite;
+        if (field.isBigEndian)
+            bitpos -= 16;
     }
 }
 

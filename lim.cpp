@@ -1,12 +1,18 @@
-#include "i3lim.h"
+#include "lim.h"
+
+#include "openinverter/i3LIM.h"
+#include "openinverter/params.h"
 
 #include <QDebug>
 #include <QTimer>
+
 
 I3LIM::I3LIM(QCanBusDevice* canBusDevice, quint32 frameId, QObject* parent)
     : CanBusNode(canBusDevice, 0, frameId, parent)
 {
     qDebug() << "Adding i3 LIM";
+
+    Param::SetInt(Param::BattCap, 40080);
 
     m_fields[0x3b4] = CanMessageUtils::parseFields(QStringLiteral("SG_ Pilot_Current : 0|8@1+ (1,0) [0|63] \"Amps\" Vector__XXX\n"
                                                                   "SG_ Cable_Current : 8|8@1+ (1,0) [0|63] \"Amps\" Vector__XXX\n"
@@ -26,7 +32,7 @@ I3LIM::I3LIM(QCanBusDevice* canBusDevice, quint32 frameId, QObject* parent)
     m_fields[0x272] = CanMessageUtils::parseFields(QStringLiteral("SG_ FC_Contactor_Info : 20|4@1+ (1,0) [0|15] \"\" Vector__XXX\n"
                                                                   "SG_ FC_Contactor_State : 18|2@1+ (1,0) [0|3] \"\" Vector__XXX\n"
                                                                   "SG_ ChargeFlap_Status : 16|2@1+ (1,0) [0|4] \"\" Vector__XXX"));
-    
+
     m_fields[0x337] = CanMessageUtils::parseFields(QStringLiteral("SG_ Hook_Pos : 0|2@1+ (1,0) [0|3] \"\" Vector__XXX\n"
                                                                   "SG_ Hook_Lock : 2|2@1+ (1,0) [0|3] \"\" Vector__XXX"));
 
@@ -48,6 +54,18 @@ I3LIM::I3LIM(QCanBusDevice* canBusDevice, quint32 frameId, QObject* parent)
                                                                   "SG_ Charge_Req : 16|4@1+ (1,0) [0|16] \"\" Vector__XXX\n"
                                                                   "SG_ Charging_Pwr : 28|12@1+ (25,0) [0|102350] \"Watts\" Vector__XXX"));
 
+    m_fields[0x2f1] = CanMessageUtils::parseFields(QStringLiteral("SG_ Time_to_FC_SOC : 40|16@1+ (10,0) [0|655320] \"Secs\" Vector__XXX\n"
+                                                                  "SG_ Time_to_SOC : 24|16@1+ (10,0) [0|655320] \"Secs\" Vector__XXX\n"
+                                                                  "SG_ FC_SOC : 56|8@1+ (0.5,0) [0|100] \"%\" Vector__XXX\n"
+                                                                  "SG_ CHG_I_Lim : 16|8@1+ (1,0) [0|254] \"Amps\"  LIM\n"
+                                                                  "SG_ CHG_V_Lim : 0|14@1- (0.1,0) [0|1000] \"Volts\" Vector__XXX"));
+
+    m_fields[0x2fa] = CanMessageUtils::parseFields(QStringLiteral("SG_ Chg_End : 18|2@1+ (1,0) [0|1] "" Vector__XXX"
+                                                                  "SG_ FC_End : 16|2@1+ (1,0) [0|1] \"\" Vector__XXX\n"
+                                                                  "SG_ Target_CHG_Ph : 20|4@1+ (1,0) [0|1] \"\" Vector__XXX\n"
+                                                                  "SG_ Time2Go : 0|16@1+ (1,0) [0|65534] \"Mins\" Vector__XXX\n"
+                                                                  "SG_ Target_Volts : 24|14@1+ (0.1,0) [0|1000] \"V\"  LIM"));
+
     QTimer* t = new QTimer(this);
     connect(t, &QTimer::timeout, this, &I3LIM::prepareAndSendFrame10);
     t->start(10);
@@ -57,9 +75,6 @@ I3LIM::I3LIM(QCanBusDevice* canBusDevice, quint32 frameId, QObject* parent)
     t = new QTimer(this);
     connect(t, &QTimer::timeout, this, &I3LIM::prepareAndSendFrame200);
     t->start(200);
-    t = new QTimer(this);
-    connect(t, &QTimer::timeout, this, &I3LIM::prepareAndSendFrame600);
-    t->start(600);
 }
 
 bool I3LIM::isChargeEnabled() const
@@ -74,83 +89,136 @@ void I3LIM::setChargeEnabled(bool enabled)
 
 void I3LIM::setMaximumPower(int maximumPower)
 {
-    m_maxPower = maximumPower;
+//    m_maxPower = maximumPower;
 }
 
 int I3LIM::maximumPower() const
 {
-    return m_maxPower;
+    return 0;//m_maxPower;
+}
+
+void I3LIM::Send(int id, uint32_t* bytes, int length)
+{
+    QByteArray data(reinterpret_cast<char*>(bytes), length);
+    qDebug() << Qt::hex << id << data;
+    if (m_fields.contains(id))
+    {
+        auto fields = m_fields[id];
+        for (const auto& field : fields)
+        {
+           qDebug() << field.name << CanMessageUtils::readField(data, field);
+        }
+    }
+    qDebug() << "";
+    sendFrame(id, data);
 }
 
 void I3LIM::receiveFrame(quint32 frameId, const QByteArray& data)
 {
     qDebug() << Qt::hex << frameId << data;
+    if (m_fields.contains(frameId))
+    {
+        auto fields = m_fields[frameId];
+        for (const auto& field : fields)
+        {
+           qDebug() << field.name << CanMessageUtils::readField(data, field);
+        }
+    }
+    qDebug() << "";
+    uint32_t* d = const_cast<uint32_t*>(reinterpret_cast<const uint32_t*>(data.data()));
+    switch (frameId)
+    {
+    case 0x3b4:
+        i3LIMClass::handle3B4(d);
+        break;
+    case 0x272:
+        i3LIMClass::handle3B4(d);
+        break;
+    case 0x2ce:
+        i3LIMClass::handle3B4(d);
+        break;
+    case 0x2b2:
+        i3LIMClass::handle3B4(d);
+        break;
+    case 0x2ef:
+        i3LIMClass::handle3B4(d);
+        break;
+    }
     auto fields = m_fields[frameId];
     for (const auto& field : fields)
     {
-//        qDebug() << field.name << CanMessageUtils::readField(data, field);
+       qDebug() << field.name << CanMessageUtils::readField(data, field);
     }
 }
 
 void I3LIM::prepareAndSendFrame10()
 {
-    auto data = QByteArray("\xf9\x1f\x8b\x0e\xa6\x71\x65\x5d", 8);
-    auto fields = m_fields[0x112];
-    for (const auto& field : fields)
-        qDebug() << field.name << CanMessageUtils::readField(data, field);
+    i3LIMClass::Send10msMessages(this);
+#if 0
+    auto data = QByteArray(8, '\x00');
+    CanMessageUtils::writeField(data, m_fields[0x112]["Battery_Current"], -0.7);
+    CanMessageUtils::writeField(data, m_fields[0x112]["Battery_Volts"], 372.3);
+    CanMessageUtils::writeField(data, m_fields[0x112]["DC_link"], 372.3);
+    CanMessageUtils::writeField(data, m_fields[0x112]["HVBatt_SOC"], 42.2);
+    CanMessageUtils::writeField(data, m_fields[0x112]["Battery_Status"], 5);
+    data[6] = 0x65; // 5 is Battery_Status, but the 6?
     sendFrame(0x112, data);
+#endif
 }
 
 void I3LIM::prepareAndSendFrame100()
 {
-//    sendFrame(0x109, QByteArray(8, '\0'));
-    sendFrame(0x12f, QByteArray("\xf5\x28\x88\x1d\xf1\x35\x30\x80", 8));
+    i3LIMClass::Control_Charge(m_chargeEnabled);
+    i3LIMClass::Send100msMessages(this);
+#if 0
+    // vehicle status message
+    sendFrame(0x03c, QByteArray("\xff\x5f\x00\x00\x00\x00\xff\xff", 8));
+
+    QByteArray data(8, '\x00');
+    CanMessageUtils::writeField(data, m_fields[0x3e9]["FC_Current_Command"], FC_Cur);
+    CanMessageUtils::writeField(data, m_fields[0x3e9]["Contactor_Con"], CONT_Ctrl;);
+    CanMessageUtils::writeField(data, m_fields[0x3e9]["EndOfChg_Time"], m_chargeEnabled ? 0xfe : 0x00);
+    CanMessageUtils::writeField(data, m_fields[0x3e9]["Chg_Status_Info"], CHG_Status);
+    CanMessageUtils::writeField(data, m_fields[0x3e9]["Chg_Readiness"], CHG_Ready);
+    CanMessageUtils::writeField(data, m_fields[0x3e9]["DCFC_I_Diff"], 0);
+    CanMessageUtils::writeField(data, m_fields[0x3e9]["DCFC_V_Diff"], 0);
+    CanMessageUtils::writeField(data, m_fields[0x3e9]["Batt_Energy"], 40080);
+    CanMessageUtils::writeField(data, m_fields[0x3e9]["Charge_Req"], CHG_Req);
+    CanMessageUtils::writeField(data, m_fields[0x3e9]["Charging_Pwr"], CHG_Pwr);
+    sendFrame(0x3e9, data);
+
+    // LIM need to see this but doesn't control anything...
+    sendFrame(0x431, QByteArray("\xca\xff\x0b\x02\x69\x26\xf3\x4b", 8));
+
+    data = QByteArray("\xf5\x28\x00\x00\x1d\xf1\x35\x30\x80", 8);
+    data[2] = 0x86; // ignition off 0x86, otherwise 0x8a
+    sendFrame(0x12f, data);
+
+    data = QByteArray(8, '\x00');
+    CanMessageUtils::writeField(data, m_fields[0x2f1]["Time_to_FC_SOC"], Bulk_SOCt);
+    CanMessageUtils::writeField(data, m_fields[0x2f1]["Time_to_SOC"], Full_SOCt);
+    CanMessageUtils::writeField(data, m_fields[0x2f1]["FC_SOC"], 100);
+    CanMessageUtils::writeField(data, m_fields[0x2f1]["CHG_I_Lim"], 125);
+    CanMessageUtils::writeField(data, m_fields[0x2f1]["CHG_V_Lim"], 435);
+    sendFrame(0x2f1, data);
+#endif
 }
 
 void I3LIM::prepareAndSendFrame200()
 {
-    m_chargeEnabled = true;
-    m_maxPower = 1000;
-    quint16 Batt_Wh = 40080;
-    quint8 CHG_Status = m_chargeEnabled ? 2 : 0;
-    quint8 CHG_Req = m_chargeEnabled ? 1 : 0;
-    quint16 CHG_Pwr = m_chargeEnabled ? m_maxPower / 25 : 0;
-    quint8 CHG_Ready = m_chargeEnabled ? 1 : 0;
-    quint8 EOC_Time = m_chargeEnabled ? 0xfe : 0x00;
-    quint16 FC_Cur = m_chargeEnabled ? 125 : 0;
-
-    auto highByte = [](quint16 data) -> quint8 {
-        return (data >> 8) & 0xff;
-    };
-    auto lowByte = [](quint16 data) -> quint8 {
-        return data & 0xff;
-    };
-    QByteArray data(8, '\0');
-    data[0]=lowByte(Batt_Wh);  
-    data[1]=highByte(Batt_Wh); 
-    data[2]=((CHG_Status<<4)|(CHG_Req));  //charge status in bits 4-7.goes to 1 then 2.8 secs later to 2. Plug locking???. Charge request in lower nibble. 1 when charging. 0 when not charging.
-    data[3]=((CHG_Pwr<<4)|CHG_Ready); //charge readiness in bits 0 and 1. 1 = ready to charge.upper nibble is LSB of charge power.
-    data[4]=CHG_Pwr>>4;  //MSB of charge power.in this case 0x28 = 40x25 = 1000W. Probably net DC power into the Batt.
-    data[5]=0x00;  //LSB of the DC ccs current command
-    data[6]=0x00;  //bits 0 and 1 MSB of the DC ccs current command.Upper nibble is DC ccs contactor control. Observed in DC fc logs only.
-                                      //transitions from 0 to 2 and start of charge but 2 to 1 to 0 at end. Status and Ready operate the same as in AC logs.
-    data[7]=EOC_Time;// end of charge timer.
-    auto fields = m_fields[0x3e9];
-    for (const auto& field : fields)
-        qDebug() << field.name << CanMessageUtils::readField(data, field);
-    sendFrame(0x03c, QByteArray("\xff\x5f\x00\x00\x00\x00\xff\xff", 8));
-    sendFrame(0x3e9, data);
-    sendFrame(0x431, QByteArray("\xca\xff\x0b\x02\x69\x26\xf3\x4b", 8));
-}
-
-void I3LIM::prepareAndSendFrame600()
-{
-//    sendFrame(0x108, QByteArray(8, '\0'));
-    sendFrame(0x560, QByteArray("\x00\x00\x00\x00\xfe\x00\x00\x60", 8));
-//    sendFrame(0x109, QByteArray(8, '\0'));
+    i3LIMClass::Send200msMessages(this);
+#if 0
+    QByteArray data(8, '\x00');
+    CanMessageUtils::writeField(data, m_fields[0x2f1]["Chg_End"], 435); //????
+    CanMessageUtils::writeField(data, m_fields[0x2f1]["FC_End"], 435);  // ????
+    CanMessageUtils::writeField(data, m_fields[0x2f1]["Target_CHG_Ph"], Chg_Phase);
+    CanMessageUtils::writeField(data, m_fields[0x2f1]["Time2Go"], 435); //???
+    CanMessageUtils::writeField(data, m_fields[0x2f1]["Target_Volts"], 435); //???
+    sendFrame(0x2fa, data);
+#endif
 }
 
 QVector<quint32> I3LIM::receivingFrameIds() const
 {
-    return { 0x3b4, 0x272, 0x337  };
+    return { 0x3b4, 0x29e, 0x2b2, 0x2ef, 0x272 };
 }

@@ -4,7 +4,9 @@
 #include "canbusnode.h"
 #include "canmessageutils.h"
 
-class I3LIM : public CanBusNode
+#include "openinverter/stm32_can.h"
+
+class I3LIM : public CanBusNode, public CanHardware
 {
     Q_OBJECT
     Q_PROPERTY(bool chargeEnabled READ isChargeEnabled WRITE setChargeEnabled);
@@ -19,6 +21,8 @@ public:
     void setMaximumPower(int maximumPower);
     int maximumPower() const;
 
+    void Send(int id, uint32_t* bytes, int length) override;
+
 protected:
     void receiveFrame(quint32 frameId, const QByteArray& data) override;
     QVector<quint32> receivingFrameIds() const override;
@@ -26,11 +30,9 @@ protected:
     void prepareAndSendFrame10();
     void prepareAndSendFrame100();
     void prepareAndSendFrame200();
-    void prepareAndSendFrame600();
 
 private:
     bool m_chargeEnabled = false;
-    int m_maxPower = 0;
     QHash<quint32, CanMessageUtils::Fields> m_fields;
 };
 

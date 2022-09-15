@@ -8,7 +8,7 @@
 #include "leafchademoport.h"
 #include "leafobcharger.h"
 #include "leafhvbattery.h"
-#include "i3lim.h"
+#include "lim.h"
 
 int main(int argc, char* argv[])
 {
