@@ -8,6 +8,7 @@
 #include "leafchademoport.h"
 #include "leafobcharger.h"
 #include "leafhvbattery.h"
+#include "i3lim.h"
 
 int main(int argc, char* argv[])
 {
@@ -19,6 +20,7 @@ int main(int argc, char* argv[])
     nodeDetector.registerCanBusNodeType<LeafChademoPort>(0x100);
     nodeDetector.registerCanBusNodeType<LeafOBCharger>(0x390);
     nodeDetector.registerCanBusNodeType<LeafHVBattery>(0x1db);
+    nodeDetector.registerCanBusNodeType<I3LIM>(0x3b4);
 
     auto printInfo = [&]()
     {
@@ -86,7 +88,7 @@ int main(int argc, char* argv[])
         }
     };
 
-    QObject::connect(&nodeDetector, &CanBusNodeDetector::canBusNodeCreated, [&](CanBusNode* node) {
+    QObject::connect(&nodeDetector, &CanBusNodeDetector::canBusNodeCreated, [&](CanBusNode*) {
     });
 
     QTimer t;

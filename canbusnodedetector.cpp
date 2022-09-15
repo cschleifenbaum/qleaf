@@ -32,11 +32,14 @@ void CanBusNodeDetector::frameReceived(QCanBusDevice* device, const QCanBusFrame
 {
     if (!m_nodes.contains(frame.frameId()))
     {
+        if (frame.payload().size() != 8)
+            return;
         if (!m_factories.contains(frame.frameId()))
             return;
         if (auto node = m_factories[frame.frameId()](device, frame.frameId(), this))
         {
             addNode(node);
+            qDebug() << Qt::hex << frame.frameId() << frame.payload();
             Q_EMIT canBusNodeCreated(node);
         }
     }

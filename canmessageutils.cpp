@@ -23,7 +23,7 @@ CanMessageUtils::Field CanMessageUtils::parseField(const QString& field)
 {
     // "SG_ MaximumBatteryVoltage : 39|16@0+ (1,0) [0|600] "V" Vector__XXX"
    
-    static QRegularExpression re(QStringLiteral("^([^ ]+) +([^: ]+).* *: *(\\d*)\\|(\\d*)@(\\d)([+-]) *\\(([\\d.]*),([\\d.]*)\\) *\\[([^|]*)\\|([^\\]]*)\\] *\\\"([^\\\"]*)\\\""));
+    static QRegularExpression re(QStringLiteral("^([^ ]+) +([^: ]+).* *: *(\\d*)\\|(\\d*)@(\\d)([+-]) *\\(([\\d.]*),(-?[\\d.]*)\\) *\\[([^|]*)\\|([^\\]]*)\\] *\\\"([^\\\"]*)\\\""));
 
     auto match = re.match(field);
     if (match.hasMatch())
@@ -64,6 +64,24 @@ CanMessageUtils::Field CanMessageUtils::parseField(const QString& field)
     return {};
 }
 
+void CanMessageUtils::writeField(QByteArray& data, const Field& field, double value)
+{
+    value -= field.offset;
+    value /= field.factor;
+
+    int bitswritten = 0;
+    int bitpos = field.bitpos;
+    int length = field.length;
+
+    while (length > 0) {
+        int byte = bitpos / 8;
+        int localbitpos = bitpos % 8;
+        int bitstowrite = std::min(length, 8 - localbitpos);
+        uchar mask = uchar(0xff << 8 >> bitstowrite) >> (8 - bitstowrite) << localbitpos;
+        int shift = localbitpos - bitstowrite
+    }
+}
+
 double CanMessageUtils::readField(const QByteArray& data, const Field& field)
 {
     int result = 0;
@@ -83,7 +101,9 @@ double CanMessageUtils::readField(const QByteArray& data, const Field& field)
 
         bitsread += bitstoread;
         length -= bitstoread;
-        bitpos += bitstoread - 16;
+        bitpos += bitstoread;
+        if (field.isBigEndian)
+            bitpos -= 16;
     }
 
     if (field.isBigEndian)
@@ -92,7 +112,7 @@ double CanMessageUtils::readField(const QByteArray& data, const Field& field)
         {
             result = qFromBigEndian<quint16>(result);
         }
-        else
+        else if (field.length != 1)
         {
             qDebug() << "no idea how to fix endianess..." << field.name;
         }

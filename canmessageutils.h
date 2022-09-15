@@ -27,6 +27,7 @@ public:
     static Fields parseFields(const QString& field);
 
     static double readField(const QByteArray& data, const Field& field);
+    static void writeField(QByteArray& data, const Field& field, double value);
 };
 
 #endif
