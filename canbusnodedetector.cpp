@@ -45,7 +45,8 @@ void CanBusNodeDetector::frameReceived(QCanBusDevice* device, const QCanBusFrame
     }
     auto node = m_nodes.value(frame.frameId());
     Q_ASSERT(node);
-    node->receiveFrame(frame);
+    if (node->m_canBusDevice == device)
+        node->receiveFrame(frame);
 }
 
 void CanBusNodeDetector::addNode(CanBusNode* node)
