@@ -10,9 +10,13 @@
 #include "leafhvbattery.h"
 #include "lim.h"
 
+#include "openinverter/params.h"
+
 int main(int argc, char* argv[])
 {
     QCoreApplication app(argc, argv);
+
+    Param::SetInt(Param::BattCap, 40080);
 
     CanBusNodeDetector nodeDetector;
     nodeDetector.registerCanBusNodeType<TcCharger>(0x18ff50e7); // protocol 998

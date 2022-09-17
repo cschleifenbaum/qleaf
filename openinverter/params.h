@@ -1,6 +1,7 @@
 #ifndef PARAMS_H
 #define PARAMS_H
 
+#include <QDebug>
 #include <QMap>
 
 enum modes
@@ -31,7 +32,7 @@ public:
         CCS_V_Min,
         CCS_Contactor,
         CCS_State,
-        CCS_ILim,     // maximum I allowed by MS
+        CCS_ILim,     // maximum I allowed by BMS
         CCS_Ireq,
         Voltspnt,
         CP_DOOR,
@@ -43,7 +44,12 @@ public:
 	};
 
 	static void SetInt(Value v, int i) { s_map.insert(v, i); }
-	static int GetInt(Value v) { return s_map.value(v); }
+	static int GetInt(Value v)
+    {
+        if (!s_map.contains(v))
+            qDebug() << "Params::GetInt: Not value set for" << v;
+        return s_map.value(v);
+    }
 	static bool GetBool(Value v) { return GetInt(v) != 0; }
 
     static QMap<Value, int> s_map;

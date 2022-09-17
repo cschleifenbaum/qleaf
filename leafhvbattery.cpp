@@ -1,5 +1,7 @@
 #include "leafhvbattery.h"
 
+#include "openinverter/params.h"
+
 #include <QDebug>
 
 namespace
@@ -103,6 +105,7 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
         if (voltage != m_voltage)
         {
             m_voltage = voltage;
+            Param::SetInt(Param::udc, voltage);
             changedValue = true;
             Q_EMIT voltageChanged(m_voltage);
         }
@@ -110,6 +113,7 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
         if (current != m_current)
         {
             m_current = current;
+            Param::SetInt(Param::idc, current);
             changedValue = true;
             Q_EMIT currentChanged(m_current);
         }
@@ -146,6 +150,7 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
         if (m_stateOfCharge != stateOfCharge)
         {
             m_stateOfCharge = stateOfCharge;
+            Param::SetInt(Param::SOC, stateOfCharge);
             changedValue = true;
             Q_EMIT stateOfChargeChanged(m_stateOfCharge);
         }

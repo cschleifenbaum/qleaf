@@ -1,7 +1,6 @@
 #include "lim.h"
 
 #include "openinverter/i3LIM.h"
-#include "openinverter/params.h"
 
 #include <QDebug>
 #include <QTimer>
@@ -11,8 +10,6 @@ I3LIM::I3LIM(QCanBusDevice* canBusDevice, quint32 frameId, QObject* parent)
     : CanBusNode(canBusDevice, 0, frameId, parent)
 {
     qDebug() << "Adding i3 LIM";
-
-    Param::SetInt(Param::BattCap, 40080);
 
     m_fields[0x3b4] = CanMessageUtils::parseFields(QStringLiteral("SG_ Pilot_Current : 0|8@1+ (1,0) [0|63] \"Amps\" Vector__XXX\n"
                                                                   "SG_ Cable_Current : 8|8@1+ (1,0) [0|63] \"Amps\" Vector__XXX\n"
