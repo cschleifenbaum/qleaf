@@ -17,5 +17,5 @@ QT -= gui
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 # Input
-HEADERS += tccharger.h canbusnode.h canbusnodedetector.h leafobcharger.h leafhvbattery.h canmessageutils.h leafchademoport.h lim.h openinverter/i3LIM.h
+HEADERS += tccharger.h canbusnode.h canbusnodedetector.h leafobcharger.h leafhvbattery.h canmessageutils.h leafchademoport.h lim.h openinverter/i3LIM.h openinverter/params.h
 SOURCES += tccharger.cpp canbusnode.cpp main.cpp canbusnodedetector.cpp leafobcharger.cpp leafhvbattery.cpp canmessageutils.cpp leafchademoport.cpp lim.cpp openinverter/i3LIM.cpp openinverter/params.cpp

@@ -11,6 +11,8 @@ I3LIM::I3LIM(QCanBusDevice* canBusDevice, quint32 frameId, QObject* parent)
 {
     qDebug() << "Adding i3 LIM";
 
+    setChargeEnabled(true);
+
     m_fields[0x3b4] = CanMessageUtils::parseFields(QStringLiteral("SG_ Pilot_Current : 0|8@1+ (1,0) [0|63] \"Amps\" Vector__XXX\n"
                                                                   "SG_ Cable_Current : 8|8@1+ (1,0) [0|63] \"Amps\" Vector__XXX\n"
                                                                   "SG_ FC_Voltage : 56|8@1+ (2,0) [0|500] \"Volts\" Vector__XXX\n"
@@ -97,7 +99,7 @@ int I3LIM::maximumPower() const
 void I3LIM::Send(int id, uint32_t* bytes, int length)
 {
     QByteArray data(reinterpret_cast<char*>(bytes), length);
-    qDebug() << Qt::hex << id << data;
+    /*qDebug() << Qt::hex << id << data;
     if (m_fields.contains(id))
     {
         auto fields = m_fields[id];
@@ -106,13 +108,13 @@ void I3LIM::Send(int id, uint32_t* bytes, int length)
            qDebug() << field.name << CanMessageUtils::readField(data, field);
         }
     }
-    qDebug() << "";
+    qDebug() << "";*/
     sendFrame(id, data);
 }
 
 void I3LIM::receiveFrame(quint32 frameId, const QByteArray& data)
 {
-    qDebug() << Qt::hex << frameId << data;
+    /*qDebug() << Qt::hex << frameId << data;
     if (m_fields.contains(frameId))
     {
         auto fields = m_fields[frameId];
@@ -121,7 +123,7 @@ void I3LIM::receiveFrame(quint32 frameId, const QByteArray& data)
            qDebug() << field.name << CanMessageUtils::readField(data, field);
         }
     }
-    qDebug() << "";
+    qDebug() << "";*/
     uint32_t* d = const_cast<uint32_t*>(reinterpret_cast<const uint32_t*>(data.data()));
     switch (frameId)
     {
@@ -129,22 +131,17 @@ void I3LIM::receiveFrame(quint32 frameId, const QByteArray& data)
         i3LIMClass::handle3B4(d);
         break;
     case 0x272:
-        i3LIMClass::handle3B4(d);
+        i3LIMClass::handle272(d);
         break;
-    case 0x2ce:
-        i3LIMClass::handle3B4(d);
+    case 0x29e:
+        i3LIMClass::handle29E(d);
         break;
     case 0x2b2:
-        i3LIMClass::handle3B4(d);
+        i3LIMClass::handle2B2(d);
         break;
     case 0x2ef:
-        i3LIMClass::handle3B4(d);
+        i3LIMClass::handle2EF(d);
         break;
-    }
-    auto fields = m_fields[frameId];
-    for (const auto& field : fields)
-    {
-       qDebug() << field.name << CanMessageUtils::readField(data, field);
     }
 }
 

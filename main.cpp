@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
     });
 
     QTimer t;
-    QObject::connect(&t, &QTimer::timeout, [&] { printInfo(); });
+//    QObject::connect(&t, &QTimer::timeout, [&] { printInfo(); });
     QObject::connect(&t, &QTimer::timeout, [&] { controlTCChargers(); });
     t.start(1000);
 
