@@ -100,8 +100,8 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
     case 0x1db:
     {
         double voltage = readField(data, 30, 10, 0.5);
-	if (voltage != m_voltage)
-	{
+        if (voltage != m_voltage)
+        {
             m_voltage = voltage;
             changedValue = true;
             Q_EMIT voltageChanged(m_voltage);
@@ -144,11 +144,11 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
     {
         double stateOfCharge = readField(data, 14, 10, 0.1);
         if (m_stateOfCharge != stateOfCharge)
-	{
+        {
             m_stateOfCharge = stateOfCharge;
             changedValue = true;
             Q_EMIT stateOfChargeChanged(m_stateOfCharge);
-	}
+        }
     }
     }
     if (changedValue)
