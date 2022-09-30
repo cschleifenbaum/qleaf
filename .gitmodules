@@ -1,0 +1,3 @@
+[submodule "nymea-gpio"]
+	path = nymea-gpio
+	url = git@github.com:nymea/nymea-gpio.git

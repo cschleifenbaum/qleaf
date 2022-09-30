@@ -7,9 +7,18 @@
 
 
 I3LIM::I3LIM(QCanBusDevice* canBusDevice, quint32 frameId, QObject* parent)
-    : CanBusNode(canBusDevice, 0, frameId, parent)
+    : CanBusNode(canBusDevice, 0, frameId, parent),
+      m_gpio2(2),
+      m_gpio3(3)
 {
     qDebug() << "Adding i3 LIM";
+
+    m_gpio2.exportGpio();
+    m_gpio2.setDirection(Gpio::DirectionOutput);
+    m_gpio2.setValue(Gpio::ValueHigh);
+    m_gpio3.exportGpio();
+    m_gpio3.setDirection(Gpio::DirectionOutput);
+    m_gpio3.setValue(Gpio::ValueHigh);
 
     setChargeEnabled(true);
 
@@ -76,6 +85,11 @@ I3LIM::I3LIM(QCanBusDevice* canBusDevice, quint32 frameId, QObject* parent)
     t->start(200);
 }
 
+I3LIM::~I3LIM()
+{
+    setChargeEnabled(false);
+}
+
 bool I3LIM::isChargeEnabled() const
 {
     return m_chargeEnabled;
@@ -84,6 +98,8 @@ bool I3LIM::isChargeEnabled() const
 void I3LIM::setChargeEnabled(bool enabled)
 {
     m_chargeEnabled = enabled;
+    m_gpio2.setValue(enabled ? Gpio::ValueLow : Gpio::ValueHigh);
+    m_gpio3.setValue(enabled ? Gpio::ValueLow : Gpio::ValueHigh);
 }
 
 void I3LIM::setMaximumPower(int maximumPower)

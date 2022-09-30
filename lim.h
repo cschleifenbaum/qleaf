@@ -6,6 +6,8 @@
 
 #include "openinverter/stm32_can.h"
 
+#include "nymea-gpio/gpio.h"
+
 class I3LIM : public CanBusNode, public CanHardware
 {
     Q_OBJECT
@@ -13,7 +15,7 @@ class I3LIM : public CanBusNode, public CanHardware
     Q_PROPERTY(int maximumPower READ maximumPower WRITE setMaximumPower);
 public:
     I3LIM(QCanBusDevice* canBusDevice, quint32 frameId, QObject* parent = nullptr);
-    ~I3LIM() = default;
+    ~I3LIM();
 
     bool isChargeEnabled() const;
     void setChargeEnabled(bool enabled);
@@ -34,6 +36,8 @@ protected:
 private:
     bool m_chargeEnabled = false;
     QHash<quint32, CanMessageUtils::Fields> m_fields;
+    Gpio m_gpio2;
+    Gpio m_gpio3;
 };
 
 #endif
