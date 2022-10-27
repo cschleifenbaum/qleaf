@@ -105,7 +105,6 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
         if (voltage != m_voltage)
         {
             m_voltage = voltage;
-            Param::SetInt(Param::udc, voltage);
             changedValue = true;
             Q_EMIT voltageChanged(m_voltage);
         }
@@ -117,6 +116,8 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
             changedValue = true;
             Q_EMIT currentChanged(m_current);
         }
+        Param::SetInt(Param::opmode, !Param::GetBool(Param::CCS_State) && current != 0 && !Param::GetBool(Param::PlugDet) ? MOD_RUN : MOD_OFF);
+        Param::SetInt(Param::udc, Param::GetBool(Param::PlugDet) || current != 0 ? voltage : 0);
         break;
     }
     case 0x1dc:
@@ -142,7 +143,7 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
             changedValue = true;
             Q_EMIT maxPowerForChargerChanged(m_maxPowerForCharger);
         }
-        Param::SetInt(Param::CCS_ILim, std::min(m_maxPowerForCharger, m_chargePowerLimit) / m_voltage);
+        Param::SetInt(Param::CCS_ILim, std::min<double>(std::min(m_maxPowerForCharger, m_chargePowerLimit) / m_voltage, 125));
         break;
     }
     case 0x55b:

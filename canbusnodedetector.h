@@ -14,7 +14,9 @@ class CanBusNodeDetector : public QObject
     Q_OBJECT
 public:
     CanBusNodeDetector(QObject* parent = nullptr);
-    ~CanBusNodeDetector() = default;
+    ~CanBusNodeDetector();
+
+    static CanBusNodeDetector* instance();
 
     template<typename T>
     void registerCanBusNodeType(quint32 frameId)

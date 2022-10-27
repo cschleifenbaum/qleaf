@@ -2,6 +2,7 @@
 #define LEAFOBCHARGER_H
 
 #include "canbusnode.h"
+#include "canmessageutils.h"
 
 class LeafOBCharger : public CanBusNode
 {
@@ -23,6 +24,8 @@ protected:
     void receiveFrame(const QByteArray& data) override;
 
 private:
+    QHash<quint32, CanMessageUtils::Fields> m_fields;
+
     quint32 m_outputPower = 0;
     quint32 m_maxOutputPower = 0;
 };

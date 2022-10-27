@@ -4,6 +4,7 @@
 #include <QTimer>
 
 #include "canbusnodedetector.h"
+#include "chargingrelaycontroller.h"
 #include "tccharger.h"
 #include "leafchademoport.h"
 #include "leafobcharger.h"
@@ -17,6 +18,8 @@ int main(int argc, char* argv[])
     QCoreApplication app(argc, argv);
 
     Param::SetInt(Param::BattCap, 40080);
+
+    ChargingRelayController relays;
 
     CanBusNodeDetector nodeDetector;
     nodeDetector.registerCanBusNodeType<TcCharger>(0x18ff50e7); // protocol 998
@@ -47,8 +50,6 @@ int main(int argc, char* argv[])
         {
             qDebug() << charger->outputVoltage() << "V";
             qDebug() << charger->outputCurrent() << "A";
-            //charger->setMaxOutputVoltage(96 * 4.2);
-            //charger->setMaxOutputCurrent(20);
         }
         qDebug() << "";
     };
@@ -59,12 +60,12 @@ int main(int argc, char* argv[])
         const auto onboardChargers = nodeDetector.createdNodeInstances<LeafOBCharger>();
         const auto batteries = nodeDetector.createdNodeInstances<LeafHVBattery>();
 
-        if (batteries.isEmpty())
+        /*if (batteries.isEmpty())
             qDebug() << "No signal from HV battery.";
         if (onboardChargers.isEmpty())
             qDebug() << "No signal from stock onboard charger.";
         if (tcChargers.isEmpty())
-            qDebug() << "No signal from TC chargers.";
+            qDebug() << "No signal from TC chargers.";*/
 
         if (batteries.isEmpty() || onboardChargers.isEmpty())
         {
@@ -73,21 +74,20 @@ int main(int argc, char* argv[])
                 charger->setMaxOutputVoltage(0);
                 charger->setMaxOutputCurrent(0);
             }
-//            if (tcChargers.isEmpty())
-//                return;
+            if (tcChargers.isEmpty())
+                return;
         }
 
-        const quint32 maxPower = 20000;//batteries.first()->maxPowerForCharger();
-        const quint32 onboardChargerPower = 3300;//charger->outputPower();
+        const quint32 maxPower = batteries.first()->maxPowerForCharger();
+        const quint32 onboardChargerPower = 6600;//charger->outputPower();
         const quint32 totalTcChargerPower = maxPower - onboardChargerPower;
         if (!tcChargers.isEmpty())
         {
             const quint32 tcChargerPower = std::min(onboardChargerPower, totalTcChargerPower / tcChargers.count());
             for (auto charger : tcChargers)
             {
-                charger->setMaxOutputVoltage(403.2);
+                charger->setMaxOutputVoltage(435);
                 charger->setMaxOutputCurrent(tcChargerPower / charger->maxOutputVoltage());
-                qDebug() << 403.2 << (tcChargerPower / charger->maxOutputVoltage());
             }
         }
     };

@@ -5,9 +5,13 @@
 #include <QCanBus>
 #include <QDebug>
 
+static CanBusNodeDetector* s_instance = nullptr;
+
 CanBusNodeDetector::CanBusNodeDetector(QObject* parent)
     : QObject(parent)
 {
+    s_instance = this;
+
     auto canbus = QCanBus::instance();
     for (auto plugin : canbus->plugins())
     {
@@ -18,16 +22,27 @@ CanBusNodeDetector::CanBusNodeDetector(QObject* parent)
             if (!device)
                 continue;
             device->connectDevice();
+            m_canBusDevices[deviceInfo.name()] = device;
             QObject::connect(device, &QCanBusDevice::framesReceived, this, [device,this]{
-                auto frames = device->readAllFrames();
-                for (auto frame : frames)
+                const auto frames = device->readAllFrames();
+                for (const auto& frame : frames)
                     frameReceived(device, frame);
             });
         }
     }
 
 }
-    
+
+CanBusNodeDetector::~CanBusNodeDetector()
+{
+    s_instance = nullptr;
+}
+
+CanBusNodeDetector* CanBusNodeDetector::instance()
+{
+    return s_instance;
+}
+
 void CanBusNodeDetector::frameReceived(QCanBusDevice* device, const QCanBusFrame& frame)
 {
     if (!m_nodes.contains(frame.frameId()))

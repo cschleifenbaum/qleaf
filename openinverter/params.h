@@ -21,6 +21,7 @@ class Param : public QObject
 public:
     enum Value
     {
+        OBC_Charge_Status,
         PilotLim,
         CableLim,
         PlugDet,
@@ -54,7 +55,9 @@ public:
             t = new QTimer;
             QObject::connect(t, &QTimer::timeout, [&]()
             {
-                qDebug() << s_map;
+                qDebug() << "\n    " << s_map;
+                if (s_map.contains(CCS_State))
+                    qDebug() << "CCS State: " << s_map.value(CCS_State);
             });
             t->start(1000);
         }
@@ -63,13 +66,13 @@ public:
     }
     static int GetInt(Value v)
     { 
-        if (!s_map.contains(v))
-            qDebug() << "Params::GetInt: Not value set for" << v;
+        //if (!s_map.contains(v))
+        //    qDebug() << "Params::GetInt: Not value set for" << v;
         return s_map.value(v);
     }
     static bool GetBool(Value v)
     {
-        return GetInt(v) != 0;
+        return GetInt(v) == 1;
     }
 
     static QMap<Value, int> s_map;

@@ -33,6 +33,7 @@ protected:
 
 private:
     friend class CanBusNodeDetector;
+    friend class ChargingRelayController;
     QCanBusDevice* m_canBusDevice = nullptr;
     quint32 m_frameIdSending = 0x0;
     quint32 m_frameIdReceiving = 0x0;
