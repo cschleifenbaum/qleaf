@@ -3,4 +3,4 @@
 	url = git@github.com:nymea/nymea-gpio.git
 [submodule "Stm32-vcu"]
 	path = Stm32-vcu
-	url = https://github.com/damienmaguire/Stm32-vcu.git
+	url = https://github.com/cschleifenbaum/Stm32-vcu.git

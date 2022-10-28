@@ -22,7 +22,6 @@ CanBusNodeDetector::CanBusNodeDetector(QObject* parent)
             if (!device)
                 continue;
             device->connectDevice();
-            m_canBusDevices[deviceInfo.name()] = device;
             QObject::connect(device, &QCanBusDevice::framesReceived, this, [device,this]{
                 const auto frames = device->readAllFrames();
                 for (const auto& frame : frames)
