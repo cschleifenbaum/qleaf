@@ -62,6 +62,8 @@ LeafHVBattery::LeafHVBattery(QCanBusDevice* canBusDevice, quint32 frameId, QObje
     : CanBusNode(canBusDevice, 0, frameId, parent)
 {
     qDebug() << "Adding Leaf HV battery";
+    Param::SetInt(Param::BattCap, 40080);
+    Param::SetInt(Param::Voltspnt, 435);
 }
 
 quint32 LeafHVBattery::dischargePowerLimit() const
@@ -116,7 +118,7 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
             changedValue = true;
             Q_EMIT currentChanged(m_current);
         }
-        Param::SetInt(Param::opmode, !Param::GetBool(Param::CCS_State) && current != 0 && !Param::GetBool(Param::PlugDet) ? MOD_RUN : MOD_OFF);
+        Param::SetInt(Param::opmode, Param::GetInt(Param::CCS_State) == 0 && current != 0 && !Param::GetBool(Param::PlugDet) ? MOD_RUN : MOD_OFF);
         Param::SetInt(Param::udc, Param::GetBool(Param::PlugDet) || current != 0 ? voltage : 0);
         break;
     }

@@ -17,8 +17,6 @@ int main(int argc, char* argv[])
 {
     QCoreApplication app(argc, argv);
 
-    Param::SetInt(Param::BattCap, 40080);
-
     ChargingRelayController relays;
 
     CanBusNodeDetector nodeDetector;
@@ -79,15 +77,15 @@ int main(int argc, char* argv[])
         }
 
         const quint32 maxPower = batteries.first()->maxPowerForCharger();
-        const quint32 onboardChargerPower = 6600;//charger->outputPower();
-        const quint32 totalTcChargerPower = maxPower - onboardChargerPower;
+        const quint32 onboardChargerPower = onboardChargers.first()->outputPower();
+        const quint32 totalTcChargerPower = onboardChargerPower > maxPower ? 0 : maxPower - onboardChargerPower;
         if (!tcChargers.isEmpty())
         {
             const quint32 tcChargerPower = std::min(onboardChargerPower, totalTcChargerPower / tcChargers.count());
             for (auto charger : tcChargers)
             {
                 charger->setMaxOutputVoltage(435);
-                charger->setMaxOutputCurrent(tcChargerPower / charger->maxOutputVoltage());
+                charger->setMaxOutputCurrent(tcChargerPower / batteries.first()->voltage());
             }
         }
     };

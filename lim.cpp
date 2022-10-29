@@ -127,8 +127,8 @@ void I3LIM::prepareAndSendFrame10()
 
 void I3LIM::prepareAndSendFrame100()
 {
-    i3LIMClass::Control_Charge(m_chargeEnabled);
     i3LIMClass::Send100msMessages(this);
+    i3LIMClass::Control_Charge(m_chargeEnabled);
 }
 
 void I3LIM::prepareAndSendFrame200()
