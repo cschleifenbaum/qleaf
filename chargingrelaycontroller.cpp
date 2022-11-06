@@ -10,7 +10,7 @@
 #include <QLoggingCategory>
 #include <QTimer>
 
-void initGpio(Gpio& pin, Gpio::Direction direction = Gpio::DirectionOutput)
+static void initGpio(Gpio& pin, Gpio::Direction direction = Gpio::DirectionOutput)
 {
     if (!QDir(pin.gpioDirectory()).exists())
         pin.exportGpio();
@@ -74,7 +74,10 @@ void ChargingRelayController::deductChargingMode()
     else
         setChargingMode(obc_plug_det ? ChargingMode::LeafOBCharger : ChargingMode::LIM);
 
-    setChademoProximity(lim_plug_det && !pilot_typ_ac && !pilot_lim && !cable_lim);
+    bool fakeChademo = lim_plug_det && !pilot_typ_ac && !pilot_lim && !cable_lim;
+    setChademoProximity(fakeChademo);
+    setChargerStart1(fakeChademo && ccs_state >= 3 && ccs_state <= 8);
+    setChargerStart2(fakeChademo && ccs_state >= 4 && ccs_state <= 7);
 }
 
 ChargingRelayController::ChargingMode ChargingRelayController::chargingMode() const
@@ -86,13 +89,6 @@ void ChargingRelayController::setChargingMode(ChargingMode mode)
 {
     if (chargingMode() == mode)
         return;
-    bool lim_plug_det = Param::GetBool(Param::PlugDet);
-    int obc_charge_status = Param::GetInt(Param::OBC_Charge_Status);
-    bool obc_plug_det = obc_charge_status == 2 || obc_charge_status == 4 || obc_charge_status == 12;
-    int lim_state = Param::GetInt(Param::CCS_State);
-
-    qDebug() << "lim_plug_det" << lim_plug_det << "obc_charge_status" << obc_charge_status << "obc_plug_det" << obc_plug_det << "lim_state" << lim_state << "mode" << (mode == ChargingMode::LIM ? "LIM" : "OBC");
-
     m_gpio15.setValue(mode == ChargingMode::LIM ? Gpio::ValueHigh : Gpio::ValueLow);
 }
 
@@ -114,7 +110,7 @@ void ChargingRelayController::fakeChargeFlap()
 
 bool ChargingRelayController::chademoProximity() const
 {
-    return const_cast<ChargingRelayController*>(this)->m_gpio3.value() == Gpio::ValueHigh;
+    return const_cast<ChargingRelayController*>(this)->m_gpio4.value() == Gpio::ValueHigh;
 }
 
 void ChargingRelayController::setChademoProximity(bool proximity)
@@ -122,7 +118,7 @@ void ChargingRelayController::setChademoProximity(bool proximity)
     if (proximity == chademoProximity())
         return;
 //    qDebug() << "set Chademo proximity" << proximity;
-    m_gpio3.setValue(proximity ? Gpio::ValueHigh : Gpio::ValueLow);
+    m_gpio4.setValue(proximity ? Gpio::ValueHigh : Gpio::ValueLow);
 }
 
 void ChargingRelayController::setChargeFlapOpen(bool open)
@@ -135,4 +131,28 @@ void ChargingRelayController::setChargeFlapOpen(bool open)
 bool ChargingRelayController::isChargeFlapOpen() const
 {
     return const_cast<ChargingRelayController*>(this)->m_gpio2.value() == Gpio::ValueHigh;
+}
+
+void ChargingRelayController::setChargerStart1(bool set)
+{
+    if (isChargerStart1Set() == set)
+        return;
+    m_gpio3.setValue(set ? Gpio::ValueHigh : Gpio::ValueLow);
+}
+
+bool ChargingRelayController::isChargerStart1Set() const
+{
+    return const_cast<ChargingRelayController*>(this)->m_gpio3.value() == Gpio::ValueHigh;
+}
+
+void ChargingRelayController::setChargerStart2(bool set)
+{
+    if (isChargerStart2Set() == set)
+        return;
+    m_gpio14.setValue(set ? Gpio::ValueHigh : Gpio::ValueLow);
+}
+
+bool ChargingRelayController::isChargerStart2Set() const
+{
+    return const_cast<ChargingRelayController*>(this)->m_gpio14.value() == Gpio::ValueHigh;
 }

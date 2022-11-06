@@ -3,6 +3,8 @@
 #include <QDebug>
 #include <QTimer>
 
+#include "openinverter/params.h"
+
 LeafChademoPort::LeafChademoPort(QCanBusDevice* canBusDevice, quint32 frameId, QObject* parent)
     : CanBusNode(canBusDevice, 0, frameId, parent)
 {
@@ -56,18 +58,62 @@ LeafChademoPort::LeafChademoPort(QCanBusDevice* canBusDevice, quint32 frameId, Q
 
 void LeafChademoPort::receiveFrame(quint32 frameId, const QByteArray& data)
 {
-    qDebug() << Qt::hex << frameId << data;
+    //qDebug() << Qt::hex << frameId << data;
     auto fields = m_fields[frameId];
     for (const auto& field : fields)
     {
-        qDebug() << field.name << CanMessageUtils::readField(data, field);
+    //    qDebug() << field.name << CanMessageUtils::readField(data, field);
+    }
+
+    if (frameId == 0x100)
+    {
+        m_thresholdVoltage = CanMessageUtils::readField(data, m_fields[0x100]["MaximumBatteryVoltage"]);
+    }
+    else if (frameId == 0x102)
+    {
+        m_chargingCurrentRequest = CanMessageUtils::readField(data, m_fields[0x102]["ChargingCurrentRequest"]);
     }
 }
 
 void LeafChademoPort::prepareAndSendFrame()
 {
-    sendFrame(0x108, QByteArray(8, '\0'));
-    sendFrame(0x109, QByteArray(8, '\0'));
+    if (!Param::GetBool(Param::PlugDet)) // no CCS plug - this is a real Chademo charge - keep our fingers away
+        return;
+
+    int ccs_state = Param::GetInt(Param::CCS_State);
+
+    bool statusChargerStopControl = ccs_state > 6;  // stop if true
+    bool statusStation = true; // Charging
+    bool statusVehicleConnectorLock = ccs_state < 8; // Locked if true
+
+    quint16 availableOutputVoltage = 500; //Param::GetInt(Param::CCS_V_Avail);
+    quint8 availableOutputCurrent = 125;//statusChargerStopControl ? 0 : 125; //Param::GetInt(Param::CCS_I_Avail);
+
+    quint16 outputVoltage = statusVehicleConnectorLock ? Param::GetInt(Param::udc)/*m_thresholdVoltage*/ : 0;//Param::GetInt(Param::CCS_V) : 0;
+    quint8 outputCurrent = m_chargingCurrentRequest; // Param::GetInt(Param::CCS_I);
+
+    QByteArray data(8, '\0');
+    data[0] = 1; // EVContactorWeldingDetection: Supporting vehicle welding detection
+    data[1] = availableOutputVoltage & 0xff;
+    data[2] = availableOutputVoltage >> 8;
+    data[3] = availableOutputCurrent;
+    data[4] = m_thresholdVoltage & 0xff;
+    data[5] = m_thresholdVoltage >> 8;
+    sendFrame(0x108, data);
+
+    data = QByteArray(8, '\0');
+    data[0] = 2; // ControlProtocolNumberQC
+    data[1] = outputVoltage & 0xff;
+    data[2] = outputVoltage >> 8;
+    data[3] = outputCurrent;
+    data[4] = 0;
+    data[5] = (statusChargerStopControl ? 0x20 : 0) |
+              (statusStation ? 0x01 : 0) |
+              (statusVehicleConnectorLock ? 4 : 0);
+    data[6] = 0; // remaining charge time 10s
+    data[7] = 60; // remaining charge time min
+
+    sendFrame(0x109, data);
 }
 
 QVector<quint32> LeafChademoPort::receivingFrameIds() const
