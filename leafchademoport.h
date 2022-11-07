@@ -9,7 +9,7 @@ class LeafChademoPort : public CanBusNode
     Q_OBJECT
 public:
     LeafChademoPort(QCanBusDevice* canBusDevice, quint32 frameId, QObject* parent = nullptr);
-    ~LeafChademoPort() = default;
+    ~LeafChademoPort();
 
 protected:
     void receiveFrame(quint32 frameId, const QByteArray& data) override;

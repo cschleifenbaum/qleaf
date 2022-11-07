@@ -56,6 +56,11 @@ LeafChademoPort::LeafChademoPort(QCanBusDevice* canBusDevice, quint32 frameId, Q
     t->start(100);
 }
 
+LeafChademoPort::~LeafChademoPort()
+{
+    Param::SetInt(Param::CHAdeMO_Ireq, 0);
+}
+
 void LeafChademoPort::receiveFrame(quint32 frameId, const QByteArray& data)
 {
     //qDebug() << Qt::hex << frameId << data;
@@ -72,6 +77,7 @@ void LeafChademoPort::receiveFrame(quint32 frameId, const QByteArray& data)
     else if (frameId == 0x102)
     {
         m_chargingCurrentRequest = CanMessageUtils::readField(data, m_fields[0x102]["ChargingCurrentRequest"]);
+        Param::SetInt(Param::CHAdeMO_Ireq, m_chargingCurrentRequest);
     }
 }
 

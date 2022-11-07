@@ -37,6 +37,7 @@ public:
         CCS_State,
         CCS_ILim,     // maximum I allowed by BMS
         CCS_Ireq,
+        CHAdeMO_Ireq,
         Voltspnt,
         CP_DOOR,
         udc,          // battery voltage, V
