@@ -104,7 +104,7 @@ void ChargingRelayController::fakeChargeFlap()
         setChargeFlapOpen(true);  // plug inserted... well.. must be open
     if (battery_I == 0)
         setChargeFlapOpen(true);  // car is standing still -> set it to open; maybe we want to charge
-    if (battery_I < -20)
+    if (battery_I < 0 && !lim_plug_det && !obc_plug_det)
         setChargeFlapOpen(false); // we are driving -> charge flag should be closed. Now run your weld test, LIM!
 }
 
