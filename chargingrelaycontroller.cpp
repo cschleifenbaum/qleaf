@@ -53,18 +53,6 @@ void ChargingRelayController::deductChargingMode()
     int ccs_contactor = Param::GetInt(Param::CCS_Contactor);
     int ccs_state = Param::GetInt(Param::CCS_State);
 
-    if (ccs_contactor > 1 && ccs_state < 4)
-    {
-        setChargingMode(ChargingMode::LeafOBCharger);
-        setChargeFlapOpen(false);
-        m_weldTest = true;
-        return;
-    }
-
-    if (m_weldTest)
-        setChargeFlapOpen(true);
-
-    m_weldTest = false;
 
     // LIM says plug detected -> state 0 is AC - DC otherwise
     if (lim_plug_det || pilot_typ_ac)
@@ -89,13 +77,12 @@ void ChargingRelayController::setChargingMode(ChargingMode mode)
 {
     if (chargingMode() == mode)
         return;
+    qDebug() << "Set charging mode to" << (mode == ChargingMode::LIM ? "LIM" : "Leaf onboard charger");
     m_gpio15.setValue(mode == ChargingMode::LIM ? Gpio::ValueHigh : Gpio::ValueLow);
 }
 
 void ChargingRelayController::fakeChargeFlap()
 {
-    if (m_weldTest)
-        return;
     bool lim_plug_det = Param::GetBool(Param::PlugDet);
     int battery_I = Param::GetInt(Param::idc);
     int obc_charge_status = Param::GetInt(Param::OBC_Charge_Status);

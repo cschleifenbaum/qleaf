@@ -39,7 +39,6 @@ private:
     Gpio m_gpio4;   // Chademo proximity, pin 7 -> GND
     Gpio m_gpio14;  // Chademo d2, pin 10 -> GND
     Gpio m_gpio15;  // PP, CP, CCS plug lock...
-    bool m_weldTest = false;
 };
 
 #endif
