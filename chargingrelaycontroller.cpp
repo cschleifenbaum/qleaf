@@ -65,7 +65,7 @@ void ChargingRelayController::deductChargingMode()
     bool fakeChademo = lim_plug_det && !pilot_typ_ac && !pilot_lim && !cable_lim;
     setChademoProximity(fakeChademo);
     setChargerStart1(fakeChademo && ccs_state >= 2 && ccs_state <= 8);
-    setChargerStart2(fakeChademo && ccs_state >= 3 && ccs_state <= 7);
+    setChargerStart2(fakeChademo && ccs_state >= 2 && ccs_state <= 7);
 }
 
 ChargingRelayController::ChargingMode ChargingRelayController::chargingMode() const

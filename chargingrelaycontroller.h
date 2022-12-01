@@ -37,7 +37,7 @@ private:
     Gpio m_gpio2;   // High -> charge flap open
     Gpio m_gpio3;   // Chademo d1, pin 2 -> 12V
     Gpio m_gpio4;   // Chademo proximity, pin 7 -> GND
-    Gpio m_gpio14;  // Chademo d2, pin 10 -> GND
+    Gpio m_gpio14;  // Chademo d2, pin 10 -> pin 4 (GND when charge enable by vehicle)
     Gpio m_gpio15;  // PP, CP, CCS plug lock...
 };
 
