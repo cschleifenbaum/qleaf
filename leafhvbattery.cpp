@@ -145,7 +145,8 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
             changedValue = true;
             Q_EMIT maxPowerForChargerChanged(m_maxPowerForCharger);
         }
-        Param::SetInt(Param::CCS_ILim, std::min<double>(std::min(m_maxPowerForCharger, m_chargePowerLimit) / m_voltage, 125));
+        int chademoLimit = Param::GetInt(Param::CHAdeMO_Ireq) > 0 ? Param::GetInt(Param::CHAdeMO_Ireq) : 125;
+        Param::SetInt(Param::CCS_ILim, std::min<double>(std::min(m_maxPowerForCharger, m_chargePowerLimit) / m_voltage, chademoLimit));
         break;
     }
     case 0x55b:
