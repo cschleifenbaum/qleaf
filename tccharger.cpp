@@ -60,6 +60,11 @@ void TcCharger::setMaxOutputCurrent(double current)
     Q_EMIT maxOutputCurrentChanged(maxOutputCurrent());
 }
 
+TcCharger::StatusFlags TcCharger::status() const
+{
+    return m_status;
+}
+
 void TcCharger::prepareAndSendFrame()
 {
     auto highByte = [](quint16 data) -> quint8 {
@@ -80,6 +85,7 @@ void TcCharger::receiveFrame(const QByteArray& data)
 {
     quint16 newOutputVoltage = data[0] * 255 + data[1];
     quint16 newOutputCurrent = data[2] * 255 + data[3];
+    StatusFlags newStatus = static_cast<StatusFlags>(data[4]);
     if (newOutputVoltage != m_outputVoltage)
     {
         m_outputVoltage = newOutputVoltage;
@@ -89,5 +95,10 @@ void TcCharger::receiveFrame(const QByteArray& data)
     {
         m_outputCurrent = newOutputCurrent;
         Q_EMIT outputCurrentChanged(outputCurrent());
+    }
+    if (newStatus != m_status)
+    {
+        m_status = newStatus;
+        Q_EMIT statusChanged(status());
     }
 }
