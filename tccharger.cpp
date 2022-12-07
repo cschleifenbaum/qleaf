@@ -44,6 +44,7 @@ void TcCharger::setMaxOutputVoltage(double voltage)
         return;
     m_maxOutputVoltage = max;
     Q_EMIT maxOutputVoltageChanged(maxOutputVoltage());
+    prepareAndSendFrame();
 }
 
 double TcCharger::maxOutputCurrent() const
@@ -58,6 +59,7 @@ void TcCharger::setMaxOutputCurrent(double current)
         return;
     m_maxOutputCurrent = max;
     Q_EMIT maxOutputCurrentChanged(maxOutputCurrent());
+    prepareAndSendFrame();
 }
 
 TcCharger::StatusFlags TcCharger::status() const

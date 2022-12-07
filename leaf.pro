@@ -21,5 +21,5 @@ LIBS += -L/usr/local/Qt-5.15.5/lib -lnymea-gpio
 INCLUDEPATH += openinverter Stm32-vcu/include
 
 # Input
-HEADERS += tccharger.h canbusnode.h canbusnodedetector.h leafobcharger.h leafhvbattery.h canmessageutils.h leafchademoport.h lim.h Stm32-vcu/include/i3LIM.h openinverter/params.h chargingrelaycontroller.h
-SOURCES += tccharger.cpp canbusnode.cpp main.cpp canbusnodedetector.cpp leafobcharger.cpp leafhvbattery.cpp canmessageutils.cpp leafchademoport.cpp lim.cpp Stm32-vcu/src/i3LIM.cpp openinverter/params.cpp chargingrelaycontroller.cpp
+HEADERS += tccharger.h canbusnode.h canbusnodedetector.h leafobcharger.h leafhvbattery.h canmessageutils.h leafchademoport.h lim.h Stm32-vcu/include/i3LIM.h openinverter/params.h chargingrelaycontroller.h tcchargercontroller.h
+SOURCES += tccharger.cpp canbusnode.cpp main.cpp canbusnodedetector.cpp leafobcharger.cpp leafhvbattery.cpp canmessageutils.cpp leafchademoport.cpp lim.cpp Stm32-vcu/src/i3LIM.cpp openinverter/params.cpp chargingrelaycontroller.cpp tcchargercontroller.cpp

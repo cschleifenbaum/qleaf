@@ -6,6 +6,7 @@
 #include "canbusnodedetector.h"
 #include "chargingrelaycontroller.h"
 #include "tccharger.h"
+#include "tcchargercontroller.h"
 #include "leafchademoport.h"
 #include "leafobcharger.h"
 #include "leafhvbattery.h"
@@ -27,76 +28,7 @@ int main(int argc, char* argv[])
     nodeDetector.registerCanBusNodeType<LeafHVBattery>(0x1db);
     nodeDetector.registerCanBusNodeType<I3LIM>(0x3b4);
 
-    auto printInfo = [&]()
-    {
-        for (auto charger : nodeDetector.createdNodeInstances<LeafOBCharger>())
-        {
-            qDebug() << "Maximum output power:  " << (charger->maxOutputPower() / 1000.) << "kW";
-            qDebug() << "Output power:          " << (charger->outputPower() / 1000.0) << "kW";
-        }
-        for (auto battery : nodeDetector.createdNodeInstances<LeafHVBattery>())
-        {
-            qDebug() << "State of charge:       " << battery->stateOfCharge() << "%";
-            qDebug() << "Discharge Power limit: " << (battery->dischargePowerLimit() / 1000.) << "kW";
-            qDebug() << "Charge Power limit:    " << (battery->chargePowerLimit() / 1000.) << "kW";
-            qDebug() << "Max. Power for charger:" << (battery->maxPowerForCharger() / 1000.) << "kW";
-            qDebug() << "Battery voltage:       " << battery->voltage() << "V";
-            qDebug() << "Battery current:       " << battery->current() << "A";
-        }
-        auto tcChargers = nodeDetector.createdNodeInstances<TcCharger>();
-        for (auto charger : tcChargers)
-        {
-            qDebug() << charger->outputVoltage() << "V";
-            qDebug() << charger->outputCurrent() << "A";
-        }
-        qDebug() << "";
-    };
-
-    auto controlTCChargers = [&]()
-    {
-        const auto tcChargers = nodeDetector.createdNodeInstances<TcCharger>();
-        const auto onboardChargers = nodeDetector.createdNodeInstances<LeafOBCharger>();
-        const auto batteries = nodeDetector.createdNodeInstances<LeafHVBattery>();
-
-        /*if (batteries.isEmpty())
-            qDebug() << "No signal from HV battery.";
-        if (onboardChargers.isEmpty())
-            qDebug() << "No signal from stock onboard charger.";
-        if (tcChargers.isEmpty())
-            qDebug() << "No signal from TC chargers.";*/
-
-        if (batteries.isEmpty() || onboardChargers.isEmpty())
-        {
-            for (auto charger : tcChargers)
-            {
-                charger->setMaxOutputVoltage(0);
-                charger->setMaxOutputCurrent(0);
-            }
-            if (tcChargers.isEmpty())
-                return;
-        }
-
-        const quint32 maxPower = batteries.first()->maxPowerForCharger();
-        const quint32 onboardChargerPower = onboardChargers.first()->outputPower();
-        const quint32 totalTcChargerPower = onboardChargerPower > maxPower ? 0 : maxPower - onboardChargerPower;
-        if (!tcChargers.isEmpty())
-        {
-            const quint32 tcChargerPower = std::min(onboardChargerPower, totalTcChargerPower / tcChargers.count());
-            for (auto charger : tcChargers)
-            {
-                charger->setMaxOutputVoltage(435);
-                charger->setMaxOutputCurrent(tcChargerPower / batteries.first()->voltage());
-            }
-        }
-    };
-
-    QObject::connect(&nodeDetector, &CanBusNodeDetector::canBusNodeCreated, [&](CanBusNode*) {
-    });
-
-    QTimer t;
-//    QObject::connect(&t, &QTimer::timeout, [&] { printInfo(); });
-    QObject::connect(&t, &QTimer::timeout, [&] { controlTCChargers(); });
-    t.start(1000);
+    TcChargerController tcController;
 
     return app.exec();
 }
