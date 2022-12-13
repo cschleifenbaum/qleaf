@@ -54,7 +54,7 @@ void TcChargerController::controlChargers()
     const quint32 onboardChargerPower = m_stockCharger->outputPower();
     const quint32 totalTcChargerPower = onboardChargerPower > maxPower ? 0 : maxPower - onboardChargerPower;
 
-    const quint32 tcChargerPower = std::min(onboardChargerPower, totalTcChargerPower / m_tcChargers.count());
+    const quint32 tcChargerPower = std::min(static_cast<quint32>(onboardChargerPower * 1.05), totalTcChargerPower / m_tcChargers.count());
 
     for (auto charger : m_tcChargers)
     {
