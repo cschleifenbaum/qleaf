@@ -14,12 +14,14 @@ class TcChargerController : public QObject
 {
 public:
     TcChargerController(QObject* parent = nullptr);
+    ~TcChargerController();
 
 protected:
     void canBusNodeCreated(CanBusNode* node);
     void canBusNodeDestroyed(CanBusNode* node);
 
     void controlChargers();
+    void shutdown();
 
 private:
     QTimer* m_timer;

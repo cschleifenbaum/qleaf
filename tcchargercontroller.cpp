@@ -18,6 +18,11 @@ TcChargerController::TcChargerController(QObject* parent)
     connect(m_timer, &QTimer::timeout, this, &TcChargerController::controlChargers);
 }
 
+TcChargerController::~TcChargerController()
+{
+    shutdown();
+}
+
 void TcChargerController::canBusNodeCreated(CanBusNode* node)
 {
     connect(node, &QObject::destroyed, this, [this,node]{ canBusNodeDestroyed(node); });
@@ -42,13 +47,26 @@ void TcChargerController::canBusNodeDestroyed(CanBusNode* node)
     m_tcChargers.removeAll(reinterpret_cast<TcCharger*>(node));
     
     if (m_tcChargers.isEmpty() || !m_stockCharger || !m_battery)
-        m_timer->stop();
+        shutdown();
+}
+
+void TcChargerController::shutdown()
+{
+    m_timer->stop();
+    for (auto charger : m_tcChargers)
+    {
+        charger->setMaxOutputVoltage(0);
+        charger->setMaxOutputCurrent(0);
+    }
 }
 
 void TcChargerController::controlChargers()
 {
     if (m_tcChargers.isEmpty() || !m_stockCharger || !m_battery)
+    {
+        shutdown();
         return;
+    }
 
     const quint32 maxPower = std::min(m_battery->maxPowerForCharger(), m_battery->chargePowerLimit());
     const quint32 onboardChargerPower = m_stockCharger->outputPower();
