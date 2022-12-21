@@ -43,6 +43,7 @@ public:
         udc,          // battery voltage, V
         idc,          // battery current, A
         SOC,          // state of charge, %
+        SOCFC,        // state of charge, %
         BattCap,      // battery capacity, Wh
         opmode        // vehicle operation mode, see enum modes
     };

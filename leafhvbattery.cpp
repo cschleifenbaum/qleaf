@@ -156,6 +156,7 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
         {
             m_stateOfCharge = stateOfCharge;
             Param::SetInt(Param::SOC, stateOfCharge);
+            Param::SetInt(Param::SOCFC, stateOfCharge);
             changedValue = true;
             Q_EMIT stateOfChargeChanged(m_stateOfCharge);
         }
