@@ -50,9 +50,7 @@ void ChargingRelayController::deductChargingMode()
     int cable_lim = Param::GetInt(Param::CableLim);
     bool pilot_typ_ac = pilot_typ == 1 || pilot_typ == 2;
 
-    int ccs_contactor = Param::GetInt(Param::CCS_Contactor);
     int ccs_state = Param::GetInt(Param::CCS_State);
-
 
     // LIM says plug detected -> state 0 is AC - DC otherwise
     if (lim_plug_det || pilot_typ_ac)

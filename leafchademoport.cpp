@@ -63,13 +63,6 @@ LeafChademoPort::~LeafChademoPort()
 
 void LeafChademoPort::receiveFrame(quint32 frameId, const QByteArray& data)
 {
-    //qDebug() << Qt::hex << frameId << data;
-    auto fields = m_fields[frameId];
-    for (const auto& field : fields)
-    {
-    //    qDebug() << field.name << CanMessageUtils::readField(data, field);
-    }
-
     if (frameId == 0x100)
     {
         m_thresholdVoltage = CanMessageUtils::readField(data, m_fields[0x100]["MaximumBatteryVoltage"]);
@@ -92,14 +85,14 @@ void LeafChademoPort::prepareAndSendFrame()
     bool statusStation = true; // Charging
     bool statusVehicleConnectorLock = ccs_state < 8; // Locked if true
 
-    quint16 availableOutputVoltage = 500; //Param::GetInt(Param::CCS_V_Avail);
-    quint8 availableOutputCurrent = 125;//statusChargerStopControl ? 0 : 125; //Param::GetInt(Param::CCS_I_Avail);
+    quint16 availableOutputVoltage = 500;
+    quint8 availableOutputCurrent = 125;
 
     quint16 batteryVoltage = Param::GetInt(Param::udc);
     if (batteryVoltage != 0)
         m_batteryVoltage = batteryVoltage;
     quint16 outputVoltage = statusVehicleConnectorLock ? m_batteryVoltage : 0;
-    quint8 outputCurrent = m_chargingCurrentRequest; // Param::GetInt(Param::CCS_I);
+    quint8 outputCurrent = m_chargingCurrentRequest;
 
     QByteArray data(8, '\0');
     data[0] = 1; // EVContactorWeldingDetection: Supporting vehicle welding detection
