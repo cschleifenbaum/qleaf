@@ -20,6 +20,7 @@ protected:
 private:
     QHash<quint32, CanMessageUtils::Fields> m_fields;
     quint16 m_thresholdVoltage = 0;
+    quint16 m_batteryVoltage = 0;
     quint8 m_chargingCurrentRequest = 0;
 };
 

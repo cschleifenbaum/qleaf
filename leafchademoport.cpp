@@ -95,7 +95,10 @@ void LeafChademoPort::prepareAndSendFrame()
     quint16 availableOutputVoltage = 500; //Param::GetInt(Param::CCS_V_Avail);
     quint8 availableOutputCurrent = 125;//statusChargerStopControl ? 0 : 125; //Param::GetInt(Param::CCS_I_Avail);
 
-    quint16 outputVoltage = statusVehicleConnectorLock ? Param::GetInt(Param::udc)/*m_thresholdVoltage*/ : 0;//Param::GetInt(Param::CCS_V) : 0;
+    quint16 batteryVoltage = Param::GetInt(Param::udc);
+    if (batteryVoltage != 0)
+        m_batteryVoltage = batteryVoltage;
+    quint16 outputVoltage = statusVehicleConnectorLock ? m_batteryVoltage : 0;
     quint8 outputCurrent = m_chargingCurrentRequest; // Param::GetInt(Param::CCS_I);
 
     QByteArray data(8, '\0');
