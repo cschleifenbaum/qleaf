@@ -7,7 +7,8 @@
 
 
 I3LIM::I3LIM(QCanBusDevice* canBusDevice, quint32 frameId, QObject* parent)
-    : CanBusNode(canBusDevice, 0, frameId, parent)
+    : CanBusNode(canBusDevice, 0, frameId, parent),
+      m_sleepTimer(new QTimer(this))
 {
     qDebug() << "Adding i3 LIM";
 
@@ -74,6 +75,9 @@ I3LIM::I3LIM(QCanBusDevice* canBusDevice, quint32 frameId, QObject* parent)
     t = new QTimer(this);
     connect(t, &QTimer::timeout, this, &I3LIM::prepareAndSendFrame200);
     t->start(200);
+
+    connect(m_sleepTimer, &QTimer::timeout, this,  [&]{ m_sleep = true; });
+    m_sleepTimer->start(60000);
 }
 
 I3LIM::~I3LIM()
@@ -104,6 +108,10 @@ void I3LIM::receiveFrame(quint32 frameId, const QByteArray& data)
     {
     case 0x3b4:
         i3LIMClass::handle3B4(d);
+        if (Param::GetBool(Param::PlugDet)) {
+            m_sleep = false;
+            m_sleepTimer->start();
+        }
         break;
     case 0x272:
         i3LIMClass::handle272(d);
@@ -122,18 +130,23 @@ void I3LIM::receiveFrame(quint32 frameId, const QByteArray& data)
 
 void I3LIM::prepareAndSendFrame10()
 {
-    i3LIMClass::Send10msMessages(this);
+    if (!m_sleep)
+        i3LIMClass::Send10msMessages(this);
 }
 
 void I3LIM::prepareAndSendFrame100()
 {
-    i3LIMClass::Send100msMessages(this);
-    i3LIMClass::Control_Charge(m_chargeEnabled);
+    if (!m_sleep)
+    {
+        i3LIMClass::Send100msMessages(this);
+        i3LIMClass::Control_Charge(m_chargeEnabled);
+    }
 }
 
 void I3LIM::prepareAndSendFrame200()
 {
-    i3LIMClass::Send200msMessages(this);
+    if (!m_sleep)
+        i3LIMClass::Send200msMessages(this);
 }
 
 QVector<quint32> I3LIM::receivingFrameIds() const
