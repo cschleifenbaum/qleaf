@@ -103,6 +103,15 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
     {
     case 0x1db:
     {
+        double stateOfCharge = data[4];
+        if (m_stateOfCharge != stateOfCharge)
+        {
+            m_stateOfCharge = stateOfCharge;
+            Param::SetInt(Param::SOC, stateOfCharge);
+            Param::SetInt(Param::SOCFC, stateOfCharge);
+            changedValue = true;
+            Q_EMIT stateOfChargeChanged(m_stateOfCharge);
+        }
         double voltage = readField(data, 30, 10, 0.5);
         if (voltage != m_voltage)
         {
@@ -148,18 +157,6 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
         int chademoLimit = Param::GetInt(Param::CHAdeMO_Ireq) > 0 ? Param::GetInt(Param::CHAdeMO_Ireq) : 125;
         Param::SetInt(Param::CCS_ILim, std::min<double>(std::min(m_maxPowerForCharger, m_chargePowerLimit) / m_voltage, chademoLimit));
         break;
-    }
-    case 0x55b:
-    {
-        double stateOfCharge = readField(data, 14, 10, 0.1);
-        if (m_stateOfCharge != stateOfCharge)
-        {
-            m_stateOfCharge = stateOfCharge;
-            Param::SetInt(Param::SOC, stateOfCharge);
-            Param::SetInt(Param::SOCFC, stateOfCharge);
-            changedValue = true;
-            Q_EMIT stateOfChargeChanged(m_stateOfCharge);
-        }
     }
     }
     if (changedValue)
