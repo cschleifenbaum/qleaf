@@ -30,8 +30,6 @@ protected:
 private:
     bool m_chargeEnabled = false;
     QHash<quint32, CanMessageUtils::Fields> m_fields;
-    QTimer* m_sleepTimer;
-    bool m_sleep = false;
 };
 
 #endif
