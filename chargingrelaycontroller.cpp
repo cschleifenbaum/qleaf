@@ -60,7 +60,7 @@ void ChargingRelayController::deductChargingMode()
     else
         setChargingMode(obc_plug_det ? ChargingMode::LeafOBCharger : ChargingMode::LIM);
 
-    bool fakeChademo = lim_plug_det && !pilot_typ_ac && !pilot_lim && !cable_lim;
+    bool fakeChademo = (lim_plug_det && !pilot_typ_ac && !pilot_lim && !cable_lim) || ccs_state >= 1;
     setChademoProximity(fakeChademo);
     setChargerStart1(fakeChademo && ccs_state >= 2 && ccs_state <= 8);
     setChargerStart2(fakeChademo && ccs_state >= 2 && ccs_state <= 7);
