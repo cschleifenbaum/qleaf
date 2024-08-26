@@ -76,8 +76,10 @@ void LeafChademoPort::receiveFrame(quint32 frameId, const QByteArray& data)
 
 void LeafChademoPort::prepareAndSendFrame()
 {
-    if (!Param::GetBool(Param::PlugDet)) // no CCS plug - this is a real Chademo charge - keep our fingers away
+    if (!Param::GetBool(Param::PlugDet) && !m_activeCharging) // no CCS plug - this is a real Chademo charge - keep our fingers away
         return;
+
+    m_activeCharging = true;
 
     int ccs_state = Param::GetInt(Param::CCS_State);
 

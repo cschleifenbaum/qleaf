@@ -100,6 +100,9 @@ bool ChargingRelayController::chademoProximity() const
 
 void ChargingRelayController::setChademoProximity(bool proximity)
 {
+    // we need to unset charger start 1 first
+    if (!proximity && isChargerStart1Set())
+        return;
     if (proximity == chademoProximity())
         return;
 //    qDebug() << "set Chademo proximity" << proximity;
@@ -120,6 +123,9 @@ bool ChargingRelayController::isChargeFlapOpen() const
 
 void ChargingRelayController::setChargerStart1(bool set)
 {
+    // we need to unset charger start 2 first
+    if (!set && isChargerStart2Set())
+        return;
     if (isChargerStart1Set() == set)
         return;
     m_gpio3.setValue(set ? Gpio::ValueHigh : Gpio::ValueLow);

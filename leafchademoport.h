@@ -22,6 +22,7 @@ private:
     quint16 m_thresholdVoltage = 0;
     quint16 m_batteryVoltage = 0;
     quint8 m_chargingCurrentRequest = 0;
+    bool m_activeCharging = false;
 };
 
 #endif
