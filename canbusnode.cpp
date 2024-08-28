@@ -10,6 +10,7 @@ CanBusNode::CanBusNode(QCanBusDevice* canBusDevice, quint32 frameIdSending, quin
       m_frameIdReceiving(frameIdReceiving),
       m_timeOutTimer(new QTimer(this))
 {
+    setTimeoutInterval(5000);
     connect(m_timeOutTimer, &QTimer::timeout, this, &CanBusNode::timeout);
 }
 
@@ -37,7 +38,7 @@ void CanBusNode::receiveFrame(quint32 frameId, const QByteArray& data)
 
 void CanBusNode::receiveFrame(const QCanBusFrame& frame)
 {
-    m_timeOutTimer->start(5000);
+    m_timeOutTimer->start();
     receiveFrame(frame.payload());
     receiveFrame(frame.frameId(), frame.payload());
 }
@@ -45,4 +46,9 @@ void CanBusNode::receiveFrame(const QCanBusFrame& frame)
 QVector<quint32> CanBusNode::receivingFrameIds() const
 {
     return { m_frameIdReceiving };
+}
+
+void CanBusNode::setTimeoutInterval(int interval)
+{
+    m_timeOutTimer->setInterval(interval);
 }

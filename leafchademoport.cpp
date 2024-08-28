@@ -54,6 +54,8 @@ LeafChademoPort::LeafChademoPort(QCanBusDevice* canBusDevice, quint32 frameId, Q
     QTimer* t = new QTimer(this);
     connect(t, &QTimer::timeout, this, &LeafChademoPort::prepareAndSendFrame);
     t->start(100);
+
+    setTimeoutInterval(1000);
 }
 
 LeafChademoPort::~LeafChademoPort()

@@ -31,6 +31,8 @@ protected:
 
     virtual QVector<quint32> receivingFrameIds() const;
 
+    void setTimeoutInterval(int interval);
+
 private:
     friend class CanBusNodeDetector;
     friend class ChargingRelayController;
