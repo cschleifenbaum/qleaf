@@ -57,9 +57,12 @@ public:
             t = new QTimer;
             QObject::connect(t, &QTimer::timeout, [&]()
             {
-                qDebug() << "\n    " << s_map;
-                if (s_map.contains(CCS_State))
-                    qDebug() << "CCS State: " << s_map.value(CCS_State);
+                for (const auto& key : s_map.keys()) {
+                    qDebug() << key << s_map[key];
+               // qDebug() << "\n    " << s_map;
+                }
+                //if (s_map.contains(CCS_State))
+                //    qDebug() << "CCS State: " << s_map.value(CCS_State);
             });
             t->start(1000);
         }
