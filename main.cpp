@@ -22,6 +22,7 @@ int main(int argc, char* argv[])
 
     CanBusNodeDetector nodeDetector;
     nodeDetector.registerCanBusNodeType<TcCharger>(0x18ff50e7); // protocol 998
+    nodeDetector.registerCanBusNodeType<TcCharger>(0x18ff50e8);
     nodeDetector.registerCanBusNodeType<TcCharger>(0x18ff50e5); // protocol 1430
     nodeDetector.registerCanBusNodeType<LeafChademoPort>(0x100);
     nodeDetector.registerCanBusNodeType<LeafOBCharger>(0x390);

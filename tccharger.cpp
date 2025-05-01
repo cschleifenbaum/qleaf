@@ -8,6 +8,8 @@ quint32 matchSendingFrameId(quint32 frameIdReceiving)
 {
     if (frameIdReceiving == 0x18ff50e7)      // protocol 998
 	    return 0x1806e7f4;
+    else if (frameIdReceiving == 0x18ff50e8)
+	    return 0x1806e8f4;
     else if (frameIdReceiving == 0x18ff50e5) // protocol 1430
         return 0x1806e5f4;
     return 0x0;
