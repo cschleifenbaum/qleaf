@@ -68,7 +68,7 @@ void TcChargerController::controlChargers()
         return;
     }
 
-    const quint32 maxPower = std::min(m_battery->maxPowerForCharger(), m_battery->chargePowerLimit());
+    const quint32 maxPower = m_battery->maxPowerForCharger();
     const quint32 onboardChargerPower = m_stockCharger->outputPower();
     const quint32 totalTcChargerPower = onboardChargerPower > maxPower ? 0 : maxPower - onboardChargerPower;
 

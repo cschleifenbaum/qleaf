@@ -76,7 +76,7 @@ quint32 LeafHVBattery::chargePowerLimit() const
     return m_chargePowerLimit;
 }
 
-quint32 LeafHVBattery::maxPowerForCharger() const
+qint32 LeafHVBattery::maxPowerForCharger() const
 {
     return m_maxPowerForCharger;
 }
@@ -147,7 +147,7 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
             changedValue = true;
             Q_EMIT chargePowerLimitChanged(m_chargePowerLimit);
         }
-        quint32 maxPowerForCharger = readField(data, 26, 10, 250);
+        qint32 maxPowerForCharger = readField(data, 26, 10, 100, -10000);
         if (maxPowerForCharger != m_maxPowerForCharger)
         {
             m_maxPowerForCharger = maxPowerForCharger;
@@ -155,7 +155,7 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
             Q_EMIT maxPowerForChargerChanged(m_maxPowerForCharger);
         }
         int chademoLimit = Param::GetInt(Param::CHAdeMO_Ireq) > 0 ? Param::GetInt(Param::CHAdeMO_Ireq) : 125;
-        Param::SetInt(Param::CCS_ILim, std::min<double>(std::min(m_maxPowerForCharger, m_chargePowerLimit) / m_voltage, chademoLimit));
+        Param::SetInt(Param::CCS_ILim, std::min<double>(m_maxPowerForCharger / m_voltage, chademoLimit));
         break;
     }
     }

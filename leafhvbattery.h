@@ -8,7 +8,7 @@ class LeafHVBattery : public CanBusNode
     Q_OBJECT
     Q_PROPERTY(quint32 dischargePowerLimit READ dischargePowerLimit NOTIFY dischargePowerLimitChanged);
     Q_PROPERTY(quint32 chargePowerLimit READ chargePowerLimit NOTIFY chargePowerLimitChanged);
-    Q_PROPERTY(quint32 maxPowerForCharger READ maxPowerForCharger NOTIFY maxPowerForCharger);
+    Q_PROPERTY(qint32 maxPowerForCharger READ maxPowerForCharger NOTIFY maxPowerForCharger);
     Q_PROPERTY(double voltage READ voltage NOTIFY voltageChanged);
     Q_PROPERTY(double current READ current NOTIFY currentChanged);
     Q_PROPERTY(double stateOfCharge READ stateOfCharge NOTIFY stateOfCharge);
@@ -18,7 +18,7 @@ public:
 
     quint32 dischargePowerLimit() const;
     quint32 chargePowerLimit() const;
-    quint32 maxPowerForCharger() const;
+    qint32 maxPowerForCharger() const;
 
     double voltage() const;
     double current() const;
@@ -28,7 +28,7 @@ public:
 Q_SIGNALS:
     void dischargePowerLimitChanged(quint32 dischargePowerLimit);
     void chargePowerLimitChanged(quint32 chargePowerLimit);
-    void maxPowerForChargerChanged(quint32 maxPowerForCharger);
+    void maxPowerForChargerChanged(qint32 maxPowerForCharger);
     void voltageChanged(double voltage);
     void currentChanged(double current);
     void stateOfChargeChanged(double stateOfCharge);
@@ -40,7 +40,7 @@ protected:
 private:
     quint32 m_dischargePowerLimit = 0;
     quint32 m_chargePowerLimit = 0;
-    quint32 m_maxPowerForCharger = 0;
+    qint32 m_maxPowerForCharger = 0;
     double m_voltage = 0.0;
     double m_current = 0.0;
     double m_stateOfCharge = 0.0;
