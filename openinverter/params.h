@@ -41,8 +41,17 @@ public:
         Voltspnt,
         CP_DOOR,
         udc,          // battery voltage, V
+        udc_bat0,          // battery voltage, V
+        udc_bat1,          // battery voltage, V
         idc,          // battery current, A
+        idc_bat0,          // battery current, A
+        idc_bat1,          // battery current, A
+        idc_max,          // battery current, A
+        idc_max_bat0,          // battery current, A
+        idc_max_bat1,          // battery current, A
         SOC,          // state of charge, %
+        SOC_bat0,          // state of charge, %
+        SOC_bat1,          // state of charge, %
         SOCFC,        // state of charge, %
         BattCap,      // battery capacity, Wh
         opmode        // vehicle operation mode, see enum modes

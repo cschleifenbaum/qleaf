@@ -131,6 +131,26 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
         Param::SetInt(Param::udc, Param::GetBool(Param::PlugDet) || current != 0 ? voltage : 0);
         break;
     }
+    case 0x2db:
+    {
+        double stateOfCharge = data[4];
+        double voltage = readField(data, 30, 10, 0.5);
+        double current = readSignedField(data, 13, 11, 0.5);
+        Param::SetInt(Param::SOC_bat0, stateOfCharge);
+        Param::SetInt(Param::idc_bat0, current);
+        Param::SetInt(Param::udc_bat0, voltage);
+        break;
+    }
+    case 0x3db:
+    {
+        double stateOfCharge = data[4];
+        double voltage = readField(data, 30, 10, 0.5);
+        double current = readSignedField(data, 13, 11, 0.5);
+        Param::SetInt(Param::SOC_bat1, stateOfCharge);
+        Param::SetInt(Param::idc_bat1, current);
+        Param::SetInt(Param::udc_bat1, voltage);
+        break;
+    }
     case 0x1dc:
     {
         quint32 dischargePowerLimit = readField(data, 14, 10, 250);
@@ -153,9 +173,23 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
             m_maxPowerForCharger = maxPowerForCharger;
             changedValue = true;
             Q_EMIT maxPowerForChargerChanged(m_maxPowerForCharger);
+            Param::SetInt(Param::idc_max, m_maxPowerForCharger / m_voltage);
         }
         int chademoLimit = Param::GetInt(Param::CHAdeMO_Ireq) > 0 ? Param::GetInt(Param::CHAdeMO_Ireq) : 125;
+        chademoLimit = std::min(10, chademoLimit);
         Param::SetInt(Param::CCS_ILim, std::min<double>(m_maxPowerForCharger / m_voltage, chademoLimit));
+        break;
+    }
+    case 0x2dc:
+    {
+        qint32 maxPowerForCharger = readField(data, 26, 10, 100, -10000);
+        Param::SetInt(Param::idc_max_bat0, maxPowerForCharger / m_voltage);
+        break;
+    }
+    case 0x3dc:
+    {
+        qint32 maxPowerForCharger = readField(data, 26, 10, 100, -10000);
+        Param::SetInt(Param::idc_max_bat1, maxPowerForCharger / m_voltage);
         break;
     }
     }
@@ -165,5 +199,5 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
     
 QVector<quint32> LeafHVBattery::receivingFrameIds() const
 {
-    return { 0x1dc, 0x1db, 0x55b };
+    return { 0x1dc, 0x2dc, 0x3dc, 0x1db, 0x2db, 0x3db, 0x55b };
 }
