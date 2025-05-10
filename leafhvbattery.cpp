@@ -176,7 +176,6 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
             Param::SetInt(Param::idc_max, m_maxPowerForCharger / m_voltage);
         }
         int chademoLimit = Param::GetInt(Param::CHAdeMO_Ireq) > 0 ? Param::GetInt(Param::CHAdeMO_Ireq) : 125;
-        chademoLimit = std::min(10, chademoLimit);
         Param::SetInt(Param::CCS_ILim, std::min<double>(m_maxPowerForCharger / m_voltage, chademoLimit));
         break;
     }
