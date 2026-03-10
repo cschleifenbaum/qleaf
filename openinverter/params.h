@@ -35,6 +35,7 @@ public:
         CCS_V_Min,
         CCS_Contactor,
         CCS_State,
+        CCS_ILim_max,
         CCS_ILim,     // maximum I allowed by BMS
         CCS_Ireq,
         CHAdeMO_Ireq,

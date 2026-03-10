@@ -64,6 +64,8 @@ LeafHVBattery::LeafHVBattery(QCanBusDevice* canBusDevice, quint32 frameId, QObje
     qDebug() << "Adding Leaf HV battery";
     Param::SetInt(Param::BattCap, 40080);
     Param::SetInt(Param::Voltspnt, 435);
+
+    Param::SetInt(Param::CCS_ILim_max, 125);
 }
 
 quint32 LeafHVBattery::dischargePowerLimit() const
@@ -176,6 +178,8 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
             Param::SetInt(Param::idc_max, m_maxPowerForCharger / m_voltage);
         }
         int chademoLimit = Param::GetInt(Param::CHAdeMO_Ireq) > 0 ? Param::GetInt(Param::CHAdeMO_Ireq) : 125;
+        int ccsMax = Param::GetInt(Param::CCS_ILim_max);
+        chademoLimit = std::min(chademoLimit, ccsMax);
         Param::SetInt(Param::CCS_ILim, std::min<double>(m_maxPowerForCharger / m_voltage, chademoLimit));
         break;
     }
@@ -191,6 +195,15 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
         Param::SetInt(Param::idc_max_bat1, maxPowerForCharger / m_voltage);
         break;
     }
+    case 0x123:
+    {
+        if (data.length() < 2)
+            return;
+        quint8 command = data[0];
+        if (command == 0)
+            Param::SetInt(Param::CCS_ILim_max, data[1]);
+        break;
+    }
     }
     if (changedValue)
         Q_EMIT changed();
@@ -198,5 +211,5 @@ void LeafHVBattery::receiveFrame(quint32 frameId, const QByteArray& data)
     
 QVector<quint32> LeafHVBattery::receivingFrameIds() const
 {
-    return { 0x1dc, 0x2dc, 0x3dc, 0x1db, 0x2db, 0x3db, 0x55b };
+    return { 0x1dc, 0x2dc, 0x3dc, 0x1db, 0x2db, 0x3db, 0x55b, 0x123 };
 }
